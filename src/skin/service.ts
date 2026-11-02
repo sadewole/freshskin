@@ -1,5 +1,6 @@
 import type pg from 'pg';
 import { withUser } from '../db/client.js';
+import { IMAGE_CONSENT, requireConsent } from '../consent/consent.js';
 import {
   assessAnalysis,
   requiresRetake,
@@ -33,6 +34,8 @@ export async function submitAnalysis(
   input: { imageKey: string | null; captureMeta: CaptureQuality },
 ): Promise<{ analysisId: string }> {
   return withUser(userId, async (client) => {
+    await requireConsent(client, userId, IMAGE_CONSENT);
+
     const { rows } = await client.query<{ id: string }>(
       `INSERT INTO skin_analyses (user_id, image_key, capture_meta, status)
        VALUES ($1, $2, $3::jsonb, 'queued')

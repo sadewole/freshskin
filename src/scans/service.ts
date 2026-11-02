@@ -1,5 +1,6 @@
 import type pg from 'pg';
 import { withUser } from '../db/client.js';
+import { IMAGE_CONSENT, requireConsent } from '../consent/consent.js';
 import { parseLabel, type LexiconEntry } from './tokens.js';
 import {
   assessParse,
@@ -40,6 +41,8 @@ export async function submitScan(
   input: { kind: 'ingredient_label' | 'bottle'; imageKey: string | null },
 ): Promise<{ scanId: string }> {
   return withUser(userId, async (client) => {
+    await requireConsent(client, userId, IMAGE_CONSENT);
+
     const { rows } = await client.query<{ id: string }>(
       `INSERT INTO scans (user_id, kind, image_key, status)
        VALUES ($1, $2, $3, 'queued')

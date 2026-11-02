@@ -66,6 +66,11 @@ describe('skin analysis persistence', { skip: hasDb ? false : 'database unreacha
       `INSERT INTO profiles (user_id, skin_type, concerns, climate_zone) VALUES ($1, 'unsure', '{}', 'hot_humid')`,
       [userId],
     );
+    await admin.query(
+      `INSERT INTO consent_records (user_id, kind, policy_version, granted)
+       VALUES ($1, 'image_processing', '2026-11-01', true), ($2, 'image_processing', '2026-11-01', true)`,
+      [userId, otherId],
+    );
   });
 
   after(async () => {

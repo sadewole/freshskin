@@ -57,6 +57,11 @@ describe('scan from raw label text', { skip: ready ? false : 'database not seede
       userId,
       `text-${userId}@example.test`,
     ]);
+    await admin.query(
+      `INSERT INTO consent_records (user_id, kind, policy_version, granted)
+       VALUES ($1, 'image_processing', '2026-11-01', true)`,
+      [userId],
+    );
   });
 
   after(async () => {

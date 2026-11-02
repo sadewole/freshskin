@@ -66,6 +66,11 @@ describe('scan persistence and invariants', { skip: hasDb ? false : 'database un
       userB,
       `scan-b-${userB}@example.test`,
     ]);
+    await admin.query(
+      `INSERT INTO consent_records (user_id, kind, policy_version, granted)
+       VALUES ($1, 'image_processing', '2026-11-01', true), ($2, 'image_processing', '2026-11-01', true)`,
+      [userA, userB],
+    );
   });
 
   after(async () => {

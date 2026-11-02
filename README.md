@@ -2,7 +2,7 @@
 
 An AI personal-care assistant: photograph your skin, scan an ingredient label, and get explained body-cream and fragrance recommendations.
 
-This repository contains **six slices of the data layer** — the catalogue and recommendation pipeline, the ingredient-scan lifecycle, recommendation persistence with feedback, label tokenisation, the perfume path, and skin analysis — built to the design in [docs/design/data-layer.md](docs/design/data-layer.md) against the spec in [FreshSkin PRD.md](FreshSkin PRD.md).
+This repository contains **seven slices of the data layer** — the catalogue and recommendation pipeline, the ingredient-scan lifecycle, recommendation persistence with feedback, label tokenisation, the perfume path, skin analysis, and anonymous identity with a consent ledger — built to the design in [docs/design/data-layer.md](docs/design/data-layer.md) against the spec in [FreshSkin PRD.md](FreshSkin PRD.md).
 
 ## What this slice proves
 
@@ -43,6 +43,9 @@ Each claim below is enforced by a test, not by convention:
 | Dark skin in thin light is refused, not guessed | same file and `skin-db.test.ts` — the bias guard fires on band V/VI at low brightness |
 | A photo actually changes the ranking | `skin-db.test.ts` — hydration 20 on an `unsure` profile becomes `dry` for the recommender |
 | Images purge at 24h exactly once | same file — the second run is a no-op, and the system role has only the grant it needs |
+| Sessions resolve only for a live token, and store only a hash | `tests/auth.test.ts` — revoked and expired tokens resolve to null, raw token absent from the table |
+| No image-backed row can exist without image consent | same file — the service throws `ConsentMissing` and the database raises `42501` below it |
+| Withdrawal is an append, and under-16s cannot consent | same file — latest record wins; the minor is refused |
 
 ## Quickstart
 
@@ -79,6 +82,8 @@ src/rec/            types, term and rule registries, diversity, explanations, pi
                     affinity, and recommendation/feedback persistence
 src/scans/          parse gating, verdict table, lifecycle, persistence, label tokenisation
 src/skin/           analysis contract, confidence bands, bias guard, persistence
+src/auth/           anonymous sessions (token hashing, expiry, revocation)
+src/consent/        append-only consent ledger and gating
 src/retention/      24-hour image purge across analyses and scans
 src/service/        composition roots for creams and perfumes, shared viewer loading
 src/http/           the only modules that know the wire shapes (recommendation and scan)
@@ -106,7 +111,8 @@ Sharing one constant is the bug this separation prevents.
 - Similar-to search, layering pairs, and saved items
 - The HTTP framework and routes (the service functions are the seam)
 - The image pipeline and the vision provider; `completeAnalysis` starts from a model response
-- Authentication, consent ledger, export and erasure jobs
+- Email OTP accounts on top of anonymous sessions
+- Export and erasure jobs
 
 ## Notes for whoever picks this up
 

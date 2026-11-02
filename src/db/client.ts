@@ -42,6 +42,11 @@ export async function withUser<T>(
   }
 }
 
+let closed = false;
+
+/** Idempotent: test suites share process-level pools and may close them more than once. */
 export async function closePools(): Promise<void> {
+  if (closed) return;
+  closed = true;
   await Promise.all([appPool.end(), systemPool.end()]);
 }
