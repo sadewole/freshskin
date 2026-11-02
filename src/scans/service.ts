@@ -1,6 +1,15 @@
 import type pg from 'pg';
 import { withUser } from '../db/client.js';
-import { assessParse, decideVerdict, deriveFindings, type Finding, type ParsedToken, type ScanSubject, type Verdict } from './verdict.js';
+import { parseLabel, type LexiconEntry } from './tokens.js';
+import {
+  assessParse,
+  decideVerdict,
+  deriveFindings,
+  type Finding,
+  type ParsedToken,
+  type ScanSubject,
+  type Verdict,
+} from './verdict.js';
 
 /**
  * Scan persistence. The guarded UPDATE is the concurrency control: a scan can only leave
@@ -43,104 +52,83 @@ export async function submitScan(
   });
 }
 
-export async function completeScan(
+async function finalize(
+  client: pg.PoolClient,
   userId: string,
   scanId: string,
   tokens: readonly ParsedToken[],
   subject: ScanSubject,
+  rawText: string | null,
 ): Promise<ScanResult> {
   const parse = assessParse(tokens);
 
-  return withUser(userId, async (client) => {
-    // Claim the transition first: queued -> processing is a separate step in the worker, so
-    // by the time we finalise, `processing` is the only legal source state.
-    const claimed = await client.query<{ id: string }>(
-      `UPDATE scans
-          SET status = 'processing', updated_at = now()
-        WHERE id = $1 AND user_id = $2 AND status = 'queued'
-        RETURNING id`,
+  const claimed = await client.query<{ id: string }>(
+    `UPDATE scans
+        SET status = 'processing', updated_at = now()
+      WHERE id = $1 AND user_id = $2 AND status = 'queued'
+      RETURNING id`,
+    [scanId, userId],
+  );
+
+  if (claimed.rowCount === 0) {
+    const { rows } = await client.query<{ status: string }>(
+      'SELECT status FROM scans WHERE id = $1 AND user_id = $2',
       [scanId, userId],
     );
+    if (rows[0]?.status !== 'processing') throw new ScanNotInFlight(scanId);
+  }
 
-    if (claimed.rowCount === 0) {
-      const { rows } = await client.query<{ status: string }>(
-        'SELECT status FROM scans WHERE id = $1 AND user_id = $2',
-        [scanId, userId],
-      );
-      const status = rows[0]?.status;
-      if (status === undefined) throw new ScanNotInFlight(scanId);
-      if (status !== 'processing') throw new ScanNotInFlight(scanId);
-    }
-
-    if (!parse.usable) {
-      const insufficient = parse;
-      const { rowCount } = await client.query(
-        `UPDATE scans
-            SET status = 'low_confidence',
-                parsed = $3::jsonb,
-                matched_count = $4,
-                match_rate = $5,
-                verdict = NULL,
-                updated_at = now()
-          WHERE id = $1 AND user_id = $2 AND status = 'processing'`,
-        [scanId, userId, JSON.stringify(tokens), insufficient.matched, insufficient.matchRate.toFixed(2)],
-      );
-      if (rowCount === 0) throw new ScanNotInFlight(scanId);
-
-      return {
-        scanId,
-        status: 'low_confidence',
-        verdict: null,
-        findings: [],
-        matchRate: insufficient.matchRate,
-        matched: insufficient.matched,
-        insufficientReason: insufficient.reason,
-      };
-    }
-
-    const findings = deriveFindings(subject);
-    const verdict = decideVerdict(parse, findings);
-
+  if (!parse.usable) {
     const { rowCount } = await client.query(
       `UPDATE scans
-          SET status = 'complete',
+          SET status = 'low_confidence',
               parsed = $3::jsonb,
               matched_count = $4,
               match_rate = $5,
-              verdict = $6,
+              raw_text = COALESCE($6, raw_text),
+              verdict = NULL,
               updated_at = now()
         WHERE id = $1 AND user_id = $2 AND status = 'processing'`,
-      [
-        scanId,
-        userId,
-        JSON.stringify(tokens),
-        parse.matched,
-        parse.matchRate.toFixed(2),
-        verdict.kind === 'insufficient_evidence' ? null : verdict.kind,
-      ],
+      [scanId, userId, JSON.stringify(tokens), parse.matched, parse.matchRate.toFixed(2), rawText],
     );
     if (rowCount === 0) throw new ScanNotInFlight(scanId);
 
-    await insertFindings(client, userId, scanId, findings);
-
     return {
       scanId,
-      status: 'complete',
-      verdict,
-      findings,
+      status: 'low_confidence',
+      verdict: null,
+      findings: [],
       matchRate: parse.matchRate,
       matched: parse.matched,
-      insufficientReason: null,
+      insufficientReason: parse.reason,
     };
-  });
-}
+  }
 
-async function insertFindings(
-  client: pg.PoolClient,
-  userId: string,
-  scanId: string,
-  findings: readonly Finding[],
-): Promise<void> {
+  const findings = deriveFindings(subject);
+  const verdict = decideVerdict(parse, findings);
+
+  const { rowCount } = await client.query(
+    `UPDATE scans
+        SET status = 'complete',
+            parsed = $3::jsonb,
+            matched_count = $4,
+            match_rate = $5,
+            verdict = $6,
+            raw_text = COALESCE($7, raw_text),
+            updated_at = now()
+      WHERE id = $1 AND user_id = $2 AND status = 'processing'`,
+    [
+      scanId,
+      userId,
+      JSON.stringify(tokens),
+      parse.matched,
+      parse.matchRate.toFixed(2),
+      verdict.kind === 'insufficient_evidence' ? null : verdict.kind,
+      rawText,
+    ],
+  );
+  if (rowCount === 0) throw new ScanNotInFlight(scanId);
+
   for (const finding of findings) {
     await client.query(
       `INSERT INTO scan_findings (scan_id, user_id, label, severity, reason, source)
@@ -148,6 +136,56 @@ async function insertFindings(
       [scanId, userId, finding.label, finding.severity, finding.reason, finding.source ?? null],
     );
   }
+
+  return {
+    scanId,
+    status: 'complete',
+    verdict,
+    findings,
+    matchRate: parse.matchRate,
+    matched: parse.matched,
+    insufficientReason: null,
+  };
+}
+
+export async function completeScan(
+  userId: string,
+  scanId: string,
+  tokens: readonly ParsedToken[],
+  subject: ScanSubject,
+): Promise<ScanResult> {
+  return withUser(userId, (client) => finalize(client, userId, scanId, tokens, subject, null));
+}
+
+/**
+ * The path a real OCR worker takes: raw label text in, verdict out. The OCR call itself is a
+ * port that is not implemented here; everything after it is deterministic and testable.
+ */
+export async function completeScanFromText(
+  userId: string,
+  scanId: string,
+  rawText: string,
+  subject: ScanSubject,
+): Promise<ScanResult> {
+  return withUser(userId, async (client) => {
+    const lexicon = await loadLexicon(client);
+    const tokens = parseLabel(rawText, lexicon);
+    return finalize(client, userId, scanId, tokens, subject, rawText);
+  });
+}
+
+export async function loadLexicon(client: pg.PoolClient): Promise<LexiconEntry[]> {
+  const { rows } = await client.query<{
+    ingredient_id: string;
+    inci_name: string;
+    aliases: string[] | null;
+  }>('SELECT ingredient_id, inci_name, aliases FROM v_ingredient_lexicon');
+
+  return rows.map((row) => ({
+    ingredientId: row.ingredient_id,
+    inciName: row.inci_name,
+    aliases: row.aliases ?? [],
+  }));
 }
 
 export interface ScanView {

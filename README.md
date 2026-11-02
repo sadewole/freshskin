@@ -2,7 +2,7 @@
 
 An AI personal-care assistant: photograph your skin, scan an ingredient label, and get explained body-cream and fragrance recommendations.
 
-This repository contains **three slices of the data layer** — the catalogue and recommendation pipeline, the ingredient-scan lifecycle, and recommendation persistence with feedback — built to the design in [docs/design/data-layer.md](docs/design/data-layer.md) against the spec in [FreshSkin PRD.md](FreshSkin PRD.md).
+This repository contains **four slices of the data layer** — the catalogue and recommendation pipeline, the ingredient-scan lifecycle, recommendation persistence with feedback, and label tokenisation — built to the design in [docs/design/data-layer.md](docs/design/data-layer.md) against the spec in [FreshSkin PRD.md](FreshSkin PRD.md).
 
 ## What this slice proves
 
@@ -31,6 +31,9 @@ Each claim below is enforced by a test, not by convention:
 | A served page is persisted, and a replay is free | `tests/feedback-db.test.ts` — same ids on a repeat request, no duplicate rows |
 | Feedback is idempotent and ownership-checked | same file — a repeat action keeps one row; another user's id returns `not_found` |
 | A rating moves the affinity term, one rating cannot dominate | `tests/affinity.test.ts` — no data is exactly neutral, and a lone 1-star is damped |
+| Label text becomes tokens without inventing ingredients | `tests/tokens.test.ts` — exact, alias, fuzzy, OCR-confusion, and short-token refusal |
+| The fuzzy matcher matches published Jaro-Winkler values | `tests/jaro-winkler.test.ts` — MARTHA/MARHTA, DIXON/DICKSONX, DWAYNE/DUANE |
+| A real label runs text to verdict through the lexicon view | `tests/scan-text-db.test.ts` — 7 of 8 tokens resolve, one unknown is surfaced, verdict computed |
 
 ## Quickstart
 
@@ -65,7 +68,7 @@ src/catalogue/      readiness gate, gated-view reads, projection to domain types
 src/safety/         the single home of allergen and sensitivity detection
 src/rec/            types, term and rule registries, diversity, explanations, pipeline,
                     affinity, and recommendation/feedback persistence
-src/scans/          parse gating, verdict table, lifecycle, persistence
+src/scans/          parse gating, verdict table, lifecycle, persistence, label tokenisation
 src/service/        composition root for GET /recommendations/creams
 src/http/           the only modules that know the wire shapes (recommendation and scan)
 tests/              privilege, safety, pipeline, wire, type-level, end-to-end
@@ -85,7 +88,8 @@ Sharing one constant is the bug this separation prevents.
 
 ## What is not built yet
 
-- The OCR worker and image pipeline; scans currently accept parsed tokens from a caller
+- The OCR call itself and image preprocessing; `completeScanFromText` starts from recognised
+  text, and the vendor port is not implemented
 - Scan submission idempotency (`Idempotency-Key` replay)
 - Profiles and fragrance preferences beyond the read path used here
 - Saved items and the wishlist
