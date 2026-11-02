@@ -56,8 +56,12 @@ export function recommendationId(sessionId: string, productId: string): string {
   return `${digest.slice(0, 8)}-${digest.slice(8, 12)}-${digest.slice(12, 16)}-${digest.slice(16, 20)}-${digest.slice(20, 32)}`;
 }
 
-const toWireItem = (sessionId: string, item: ExplainedItem): WireItem => ({
-  recommendation_id: recommendationId(sessionId, item.product.id),
+const toWireItem = (
+  sessionId: string,
+  item: ExplainedItem,
+  storedIds: ReadonlyMap<string, string> | undefined,
+): WireItem => ({
+  recommendation_id: storedIds?.get(item.product.id) ?? recommendationId(sessionId, item.product.id),
   rank: item.rank,
   score: item.displayScore,
   product: {
@@ -80,13 +84,14 @@ const toWireItem = (sessionId: string, item: ExplainedItem): WireItem => ({
 export function present(
   plan: Plan,
   meta: { requestId: string; servedInMs: number; cached: boolean },
+  storedIds?: ReadonlyMap<string, string>,
 ): WireResponse {
   return {
     data: {
       session_id: plan.meta.sessionId,
       algorithm_version: plan.meta.algorithmVersion,
       profile_version: plan.meta.profileVersion,
-      items: plan.items.map((item) => toWireItem(plan.meta.sessionId, item)),
+      items: plan.items.map((item) => toWireItem(plan.meta.sessionId, item, storedIds)),
       excluded: plan.rejected.map((rejection) => ({
         product_id: rejection.productId,
         name: rejection.productName,

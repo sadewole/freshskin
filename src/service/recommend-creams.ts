@@ -2,6 +2,8 @@ import type pg from 'pg';
 import { withUser } from '../db/client.js';
 import { loadCreamCandidates } from '../catalogue/read-view.js';
 import { recommend } from '../rec/pipeline.js';
+import { feedbackAffinity } from '../rec/affinity.js';
+import { loadRatings, rememberRecommendations } from '../rec/store.js';
 import type { ClimateZone, RecommendationRequest, SkinType, ViewerFacts } from '../rec/types.js';
 import type { Sensitivity, Severity } from '../safety/conflicts.js';
 import { present, type WireResponse } from '../http/present.js';
@@ -93,9 +95,10 @@ export async function recommendCreamsFor(
     const { candidates, capped } = await loadCreamCandidates(client);
     const { viewer, profileVersion } = await loadViewer(client, userId);
     const sensitivities = await loadSensitivities(client, userId);
+    const ratings = await loadRatings(client, userId);
 
-    return recommend({
-      viewer,
+    const plan = recommend({
+      viewer: { ...viewer, feedbackAffinity: feedbackAffinity(ratings) },
       sensitivities,
       candidates,
       request,
@@ -103,11 +106,19 @@ export async function recommendCreamsFor(
       capped,
       day: options.day,
     });
+
+    // Persist inside the same transaction as the reads, so the ids we return exist.
+    const storedIds = await rememberRecommendations(client, userId, plan);
+    return { plan, storedIds };
   });
 
-  return present(plan, {
-    requestId: options.requestId,
-    servedInMs: Math.round(performance.now() - started),
-    cached: false,
-  });
+  return present(
+    plan.plan,
+    {
+      requestId: options.requestId,
+      servedInMs: Math.round(performance.now() - started),
+      cached: false,
+    },
+    plan.storedIds,
+  );
 }

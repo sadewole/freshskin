@@ -2,7 +2,7 @@
 
 An AI personal-care assistant: photograph your skin, scan an ingredient label, and get explained body-cream and fragrance recommendations.
 
-This repository contains **two slices of the data layer** — the catalogue and recommendation pipeline, then the ingredient-scan lifecycle — built to the design in [docs/design/data-layer.md](docs/design/data-layer.md) against the spec in [FreshSkin PRD.md](FreshSkin PRD.md).
+This repository contains **three slices of the data layer** — the catalogue and recommendation pipeline, the ingredient-scan lifecycle, and recommendation persistence with feedback — built to the design in [docs/design/data-layer.md](docs/design/data-layer.md) against the spec in [FreshSkin PRD.md](FreshSkin PRD.md).
 
 ## What this slice proves
 
@@ -28,6 +28,9 @@ Each claim below is enforced by a test, not by convention:
 | The database enforces the same rules | `tests/scans-db.test.ts` — a hand-written `avoid` at 40% raises `23514` |
 | Exactly one worker can finalise a scan | same file — the second completion throws `ScanNotInFlight` |
 | Scan findings are stored and isolated per user | same file — findings rows written, another user sees `null` |
+| A served page is persisted, and a replay is free | `tests/feedback-db.test.ts` — same ids on a repeat request, no duplicate rows |
+| Feedback is idempotent and ownership-checked | same file — a repeat action keeps one row; another user's id returns `not_found` |
+| A rating moves the affinity term, one rating cannot dominate | `tests/affinity.test.ts` — no data is exactly neutral, and a lone 1-star is damped |
 
 ## Quickstart
 
@@ -60,7 +63,8 @@ db/migrations/      hand-written SQL is the source of truth (roles, tables, RLS,
 src/db/             schema mirror, pools, withUser (transaction-scoped identity)
 src/catalogue/      readiness gate, gated-view reads, projection to domain types
 src/safety/         the single home of allergen and sensitivity detection
-src/rec/            types, term and rule registries, diversity, explanations, pipeline
+src/rec/            types, term and rule registries, diversity, explanations, pipeline,
+                    affinity, and recommendation/feedback persistence
 src/scans/          parse gating, verdict table, lifecycle, persistence
 src/service/        composition root for GET /recommendations/creams
 src/http/           the only modules that know the wire shapes (recommendation and scan)
@@ -84,7 +88,7 @@ Sharing one constant is the bug this separation prevents.
 - The OCR worker and image pipeline; scans currently accept parsed tokens from a caller
 - Scan submission idempotency (`Idempotency-Key` replay)
 - Profiles and fragrance preferences beyond the read path used here
-- Recommendations persistence, feedback, and saved items
+- Saved items and the wishlist
 - The HTTP framework and routes (the service functions are the seam)
 - Perfume scoring terms
 - Authentication, consent ledger, export and erasure jobs
