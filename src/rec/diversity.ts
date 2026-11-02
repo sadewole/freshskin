@@ -7,10 +7,12 @@ import type { ScoredItem } from './types.js';
  */
 export interface DiversityRules {
   readonly maxPerBrand: number;
+  readonly maxPerFamily: number;
   readonly window: number;
 }
 
-export const CREAM_DIVERSITY: DiversityRules = { maxPerBrand: 2, window: 10 };
+export const CREAM_DIVERSITY: DiversityRules = { maxPerBrand: 2, maxPerFamily: 99, window: 10 };
+export const PERFUME_DIVERSITY: DiversityRules = { maxPerBrand: 2, maxPerFamily: 3, window: 10 };
 
 export interface DiversityResult {
   readonly page: readonly ScoredItem[];
@@ -23,6 +25,7 @@ export function diversify(
   limit: number,
 ): DiversityResult {
   const perBrand = new Map<string, number>();
+  const perFamily = new Map<string, number>();
   const page: ScoredItem[] = [];
   const overflow: ScoredItem[] = [];
 
@@ -39,6 +42,15 @@ export function diversify(
     if (used >= rules.maxPerBrand) {
       overflow.push(item);
       continue;
+    }
+    const family = item.product.perfume?.familyNames[0];
+    if (family !== undefined) {
+      const familyUsed = perFamily.get(family) ?? 0;
+      if (familyUsed >= rules.maxPerFamily) {
+        overflow.push(item);
+        continue;
+      }
+      perFamily.set(family, familyUsed + 1);
     }
     perBrand.set(item.product.brandName, used + 1);
     page.push(item);

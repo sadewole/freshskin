@@ -1,5 +1,5 @@
 import { assessContact, worstSeverity, type Sensitivity } from '../safety/conflicts.js';
-import type { Candidate, Narrowing, Rejection, ViewerFacts } from './types.js';
+import type { Candidate, FragrancePreferences, Narrowing, Rejection, ViewerFacts } from './types.js';
 
 /**
  * Two registries, on purpose.
@@ -14,6 +14,7 @@ import type { Candidate, Narrowing, Rejection, ViewerFacts } from './types.js';
 export interface ExclusionContext {
   readonly viewer: ViewerFacts;
   readonly sensitivities: readonly Sensitivity[];
+  readonly fragrance: FragrancePreferences | null;
 }
 
 export interface ExclusionRule {
@@ -44,6 +45,27 @@ export const EXCLUSION_RULES: readonly ExclusionRule[] = [
           hit === undefined
             ? 'Contains an ingredient you asked us to avoid.'
             : `Contains ${hit.hit.inciName}, which you asked us to avoid.`,
+      };
+    },
+  },
+  {
+    id: 'disliked_family',
+    order: 15,
+    evaluate: (c, ctx) => {
+      const preferences = ctx.fragrance;
+      const facts = c.product.perfume;
+      if (preferences === null || facts === null) return null;
+
+      const disliked = facts.familyNames.find((family) =>
+        preferences.familiesDisliked.includes(family),
+      );
+      if (disliked === undefined) return null;
+
+      return {
+        productId: c.product.id,
+        productName: c.product.name,
+        code: 'family_disliked',
+        reason: `You asked us to avoid ${disliked}.`,
       };
     },
   },

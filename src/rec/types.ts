@@ -26,6 +26,27 @@ export interface ProductFacts {
   readonly beneficialCount: number;
 }
 
+export type StrengthPreference = 'light' | 'moderate' | 'strong' | 'very_strong';
+
+export interface PerfumeFacts {
+  readonly familyNames: readonly string[];
+  readonly noteNames: readonly string[];
+  readonly heartAndBaseNotes: readonly string[];
+  readonly longevity: number; // 1..5
+  readonly projection: number; // 1..5
+  readonly occasions: readonly string[];
+}
+
+export interface FragrancePreferences {
+  readonly familiesLiked: readonly string[];
+  readonly familiesDisliked: readonly string[];
+  readonly notesLoved: readonly string[];
+  readonly notesAvoided: readonly string[];
+  readonly strength: StrengthPreference;
+  readonly occasions: readonly string[];
+  readonly budgetMaxNgn: number | null;
+}
+
 export interface CatalogueProduct {
   readonly id: string;
   readonly name: string;
@@ -36,6 +57,8 @@ export interface CatalogueProduct {
   readonly richness: Richness | null;
   readonly fragranceFree: boolean | null;
   readonly facts: ProductFacts;
+  /** Populated for perfumes, null for creams. The term registry reads only what it needs. */
+  readonly perfume: PerfumeFacts | null;
 }
 
 export interface Candidate {
@@ -51,6 +74,8 @@ export interface ViewerFacts {
   readonly budgetMaxNgn: number | null;
   /** 0..1; 0.5 when the viewer has no ratings yet (Laplace prior). */
   readonly feedbackAffinity: Unit;
+  /** Null until the scent quiz is completed; perfume terms fall back to neutral priors. */
+  readonly fragrance: FragrancePreferences | null;
 }
 
 /** Subtraction only. No field can name an allergen, a severity, or raise a ceiling. */
@@ -72,6 +97,7 @@ export type RejectionCode =
   | 'over_budget'
   | 'out_of_stock'
   | 'fragrance_free_required'
+  | 'family_disliked'
   | 'not_catalogue_ready';
 
 export interface Rejection {
@@ -113,6 +139,7 @@ export interface ConstrainedData {
 export type Constrained = At<'constrained', ConstrainedData>;
 
 export interface PlanMeta {
+  readonly kind: ProductKind;
   readonly sessionId: string;
   readonly algorithmVersion: string;
   readonly profileVersion: string;

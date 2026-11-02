@@ -99,6 +99,7 @@ export function projectProduct(
     richness,
     fragranceFree: rows.fragrance_free,
     facts,
+    perfume: null,
   };
 
   return { kind: 'candidate', candidate: { product: catalogueProduct, surface } };
@@ -108,4 +109,96 @@ function ratioWith(ingredients: readonly IngredientRow[], fn: string): number {
   if (ingredients.length === 0) return 0;
   const count = ingredients.filter((i) => i.functions.includes(fn)).length;
   return count / ingredients.length;
+}
+
+// ---------------------------------------------------------------------------
+// Perfumes
+// ---------------------------------------------------------------------------
+
+export const perfumeRow = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1),
+  brand_name: z.string().min(1),
+  price_ngn: z.coerce.number().int().nonnegative().nullable(),
+  availability: z.enum(['in_stock', 'low_stock', 'out_of_stock', 'unknown']),
+  concentration: z.string().nullable(),
+  performance: z
+    .object({
+      longevity: z.coerce.number().min(1).max(5).optional(),
+      projection: z.coerce.number().min(1).max(5).optional(),
+    })
+    .nullable(),
+  occasion_tags: z.array(z.string()).nullable(),
+  family_names: z.array(z.string()).nullable(),
+});
+
+export const perfumeNoteRow = z.object({
+  note_name: z.string().min(1),
+  layer: z.enum(['top', 'heart', 'base']),
+  prominence: z.coerce.number().int().min(1).max(3),
+});
+
+export type PerfumeNoteRow = z.infer<typeof perfumeNoteRow>;
+
+export function projectPerfume(rawProduct: unknown, rawNotes: readonly unknown[]): ProjectionResult {
+  const product = perfumeRow.safeParse(rawProduct);
+  if (!product.success) {
+    const id =
+      typeof rawProduct === 'object' && rawProduct !== null && 'id' in rawProduct
+        ? String((rawProduct as { id: unknown }).id)
+        : 'unknown';
+    return { kind: 'draft', productId: id, reason: product.error.issues[0]?.message ?? 'malformed row' };
+  }
+
+  const notes = rawNotes.map((row) => perfumeNoteRow.safeParse(row));
+  const failed = notes.find((result) => !result.success);
+  if (failed !== undefined) {
+    return { kind: 'draft', productId: product.data.id, reason: 'malformed note row' };
+  }
+  const parsedNotes = notes.map((result) => result.data!);
+
+  const row = product.data;
+  const noteNames = parsedNotes.map((note) => note.note_name);
+
+  return {
+    kind: 'candidate',
+    candidate: {
+      product: {
+        id: row.id,
+        name: row.name,
+        brandName: row.brand_name,
+        category: 'perfume',
+        priceNgn: row.price_ngn,
+        availability: row.availability as Availability,
+        richness: null,
+        fragranceFree: null,
+        facts: {
+          irritancyAvg: 0,
+          comedogenicMax: 0,
+          humectantRatio: 0,
+          occlusiveRatio: 0,
+          beneficialCount: 0,
+        },
+        perfume: {
+          familyNames: row.family_names ?? [],
+          noteNames,
+          heartAndBaseNotes: parsedNotes
+            .filter((note) => note.layer !== 'top')
+            .map((note) => note.note_name),
+          longevity: row.performance?.longevity ?? 3,
+          projection: row.performance?.projection ?? 3,
+          occasions: row.occasion_tags ?? [],
+        },
+      },
+      surface: {
+        kind: 'notes',
+        disclosure: 'partial',
+        items: parsedNotes.map((note) => ({
+          ingredientId: null,
+          inciName: note.note_name,
+          isAllergen: false,
+        })),
+      },
+    },
+  };
 }

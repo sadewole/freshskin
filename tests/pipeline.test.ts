@@ -11,6 +11,7 @@ const viewer: ViewerFacts = {
   climateZone: 'hot_humid',
   budgetMaxNgn: 12_000,
   feedbackAffinity: 0.5,
+  fragrance: null,
 };
 
 const surfaceWith = (ids: readonly string[], inciNames: readonly string[] = []): CosmeticSurface => ({
@@ -48,6 +49,7 @@ const candidate = (over: {
       occlusiveRatio: 0.3,
       beneficialCount: 3,
     },
+    perfume: null,
   },
   surface: surfaceWith(over.ingredientIds ?? ['ing-glycerin']),
 });

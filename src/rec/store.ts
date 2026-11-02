@@ -41,11 +41,12 @@ export async function rememberRecommendations(
       `INSERT INTO recommendations
          (user_id, session_id, kind, product_id, rank, score, breakdown, reason_text,
           algorithm_version, profile_version)
-       VALUES ($1, $2, 'cream', $3, $4, $5, $6::jsonb, $7, $8, $9)
+       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9, $10)
        ON CONFLICT (session_id, product_id) DO NOTHING`,
       [
         userId,
         plan.meta.sessionId,
+        plan.meta.kind,
         item.product.id,
         item.rank,
         item.displayScore,

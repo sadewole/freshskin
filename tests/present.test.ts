@@ -11,6 +11,7 @@ const viewer: ViewerFacts = {
   climateZone: 'hot_humid',
   budgetMaxNgn: 12_000,
   feedbackAffinity: 0.5,
+  fragrance: null,
 };
 
 const candidate = (id: string, price: number, ingredientId = 'ing-glycerin'): Candidate => ({
@@ -30,6 +31,7 @@ const candidate = (id: string, price: number, ingredientId = 'ing-glycerin'): Ca
       occlusiveRatio: 0.3,
       beneficialCount: 3,
     },
+    perfume: null,
   },
   surface: {
     kind: 'inci',

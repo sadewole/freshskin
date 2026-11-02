@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { Sensitivity } from '../safety/conflicts.js';
-import { diversify, CREAM_DIVERSITY } from './diversity.js';
+import { diversify, CREAM_DIVERSITY, PERFUME_DIVERSITY } from './diversity.js';
 import { toExplained } from './explain.js';
 import { EXCLUSION_RULES, FILTER_RULES, type ExclusionContext } from './rules.js';
 import { assertWeightsNormalised, scoreTerms, TERMS_BY_KIND, type TermId } from './terms.js';
@@ -69,7 +69,11 @@ interface PipelineInput {
 }
 
 function eligibility(input: PipelineInput): Eligible {
-  const ctx: ExclusionContext = { viewer: input.viewer, sensitivities: input.sensitivities };
+  const ctx: ExclusionContext = {
+    viewer: input.viewer,
+    sensitivities: input.sensitivities,
+    fragrance: input.viewer.fragrance,
+  };
   const rejected: Rejection[] = [];
   const kept: Candidate[] = [];
 
@@ -93,8 +97,8 @@ function eligibility(input: PipelineInput): Eligible {
   return seal('eligible', data);
 }
 
-function scoring(eligible: Eligible, viewer: ViewerFacts): Scored {
-  const terms = TERMS_BY_KIND.cream;
+function scoring(eligible: Eligible, viewer: ViewerFacts, kind: 'cream' | 'perfume'): Scored {
+  const terms = TERMS_BY_KIND[kind];
   assertWeightsNormalised(terms);
 
   const ranked: ScoredItem[] = eligible.candidates
@@ -108,8 +112,13 @@ function scoring(eligible: Eligible, viewer: ViewerFacts): Scored {
   return seal('scored', data);
 }
 
-function constrain(scored: Scored, request: RecommendationRequest): Constrained {
-  const { page, overflow } = diversify(scored.ranked, CREAM_DIVERSITY, request.limit);
+function constrain(
+  scored: Scored,
+  request: RecommendationRequest,
+  kind: 'cream' | 'perfume',
+): Constrained {
+  const rules = kind === 'perfume' ? PERFUME_DIVERSITY : CREAM_DIVERSITY;
+  const { page, overflow } = diversify(scored.ranked, rules, request.limit);
   const data: ConstrainedData = { page, overflow, relaxed: page.length < request.limit };
   return seal('constrained', data);
 }
@@ -125,6 +134,7 @@ function explain(
     items,
     rejected: eligible.rejected,
     meta: {
+      kind: input.request.kind === 'perfume' ? 'perfume' : 'cream',
       sessionId: sessionId(input.viewer, input.request, input.profileVersion, input.day),
       algorithmVersion: algorithmVersion(),
       profileVersion: input.profileVersion,
@@ -137,9 +147,10 @@ function explain(
 }
 
 export function recommend(input: PipelineInput): Plan {
+  const kind = input.request.kind === 'perfume' ? 'perfume' : 'cream';
   const eligible = eligibility(input);
-  const scored = scoring(eligible, input.viewer);
-  const constrained = constrain(scored, input.request);
+  const scored = scoring(eligible, input.viewer, kind);
+  const constrained = constrain(scored, input.request, kind);
   return explain(constrained, eligible, input);
 }
 

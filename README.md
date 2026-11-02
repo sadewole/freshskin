@@ -2,7 +2,7 @@
 
 An AI personal-care assistant: photograph your skin, scan an ingredient label, and get explained body-cream and fragrance recommendations.
 
-This repository contains **four slices of the data layer** — the catalogue and recommendation pipeline, the ingredient-scan lifecycle, recommendation persistence with feedback, and label tokenisation — built to the design in [docs/design/data-layer.md](docs/design/data-layer.md) against the spec in [FreshSkin PRD.md](FreshSkin PRD.md).
+This repository contains **five slices of the data layer** — the catalogue and recommendation pipeline, the ingredient-scan lifecycle, recommendation persistence with feedback, label tokenisation, and the perfume path — built to the design in [docs/design/data-layer.md](docs/design/data-layer.md) against the spec in [FreshSkin PRD.md](FreshSkin PRD.md).
 
 ## What this slice proves
 
@@ -34,6 +34,10 @@ Each claim below is enforced by a test, not by convention:
 | Label text becomes tokens without inventing ingredients | `tests/tokens.test.ts` — exact, alias, fuzzy, OCR-confusion, and short-token refusal |
 | The fuzzy matcher matches published Jaro-Winkler values | `tests/jaro-winkler.test.ts` — MARTHA/MARHTA, DIXON/DICKSONX, DWAYNE/DUANE |
 | A real label runs text to verdict through the lexicon view | `tests/scan-text-db.test.ts` — 7 of 8 tokens resolve, one unknown is surfaced, verdict computed |
+| Perfume terms are weighted and bounded | `tests/perfume.test.ts` — both registries normalise to 1, penalties capped at 0.3 |
+| A disliked family is excluded, a liked one ranks first | same file — `family_disliked` rejection and ranking order |
+| The quiz round-trips and rejects contradictory answers | `tests/perfume-db.test.ts` — edit keeps the rest; liking and disliking one family raises `23514` |
+| Perfumes serve end to end and replay | same file — no Gourmand in results when Gourmand is disliked, same ids twice |
 
 ## Quickstart
 
@@ -69,7 +73,7 @@ src/safety/         the single home of allergen and sensitivity detection
 src/rec/            types, term and rule registries, diversity, explanations, pipeline,
                     affinity, and recommendation/feedback persistence
 src/scans/          parse gating, verdict table, lifecycle, persistence, label tokenisation
-src/service/        composition root for GET /recommendations/creams
+src/service/        composition roots for creams and perfumes, shared viewer loading
 src/http/           the only modules that know the wire shapes (recommendation and scan)
 tests/              privilege, safety, pipeline, wire, type-level, end-to-end
 scripts/            migrate and seed
@@ -91,10 +95,10 @@ Sharing one constant is the bug this separation prevents.
 - The OCR call itself and image preprocessing; `completeScanFromText` starts from recognised
   text, and the vendor port is not implemented
 - Scan submission idempotency (`Idempotency-Key` replay)
-- Profiles and fragrance preferences beyond the read path used here
-- Saved items and the wishlist
+- The scent quiz UI and the rest of the interface
+- Similar-to search, layering pairs, and saved items
 - The HTTP framework and routes (the service functions are the seam)
-- Perfume scoring terms
+- Skin analysis and the image pipeline
 - Authentication, consent ledger, export and erasure jobs
 
 ## Notes for whoever picks this up
