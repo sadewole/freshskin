@@ -4,8 +4,11 @@ import type { ClimateZone, SkinType, ViewerFacts } from '../rec/types.js';
 import type { Sensitivity, Severity } from '../safety/conflicts.js';
 
 /**
- * Everything the pipeline needs to know about who is asking. Both recommendation services
- * share it, so a cream and a perfume request can never disagree about the same profile.
+ * Everything the pipeline needs to know about who is asking.
+ *
+ * The newest usable skin analysis feeds the ranking: it supplies concerns when the profile has
+ * none, and it resolves a `skin_type` of `unsure` from measured hydration. That is what makes a
+ * photo change a recommendation rather than only decorating a profile page.
  */
 
 interface ProfileRow {
@@ -14,6 +17,13 @@ interface ProfileRow {
   climate_zone: ClimateZone;
   budget_max_ngn: number | null;
   updated_at: Date;
+}
+
+interface LatestAnalysisRow {
+  id: string;
+  concerns: string[] | null;
+  texture_scores: { hydration?: number } | null;
+  created_at: Date;
 }
 
 interface SensitivityRow {
@@ -29,43 +39,68 @@ export interface LoadedViewer {
   readonly profileVersion: string;
 }
 
+/** Hydration is the only texture signal a cream recommendation can act on today. */
+export function skinTypeFromHydration(hydration: number | undefined, fallback: SkinType): SkinType {
+  if (fallback !== 'unsure') return fallback;
+  if (hydration === undefined) return 'unsure';
+  if (hydration < 45) return 'dry';
+  if (hydration > 65) return 'oily';
+  return 'normal';
+}
+
 export async function loadViewer(client: pg.PoolClient, userId: string): Promise<LoadedViewer> {
-  const { rows } = await client.query<ProfileRow>(
+  const profileResult = await client.query<ProfileRow>(
     `SELECT skin_type, concerns, climate_zone, budget_max_ngn, updated_at
        FROM profiles WHERE user_id = $1`,
     [userId],
   );
 
-  const fragrance = await loadFragranceProfile(client, userId);
-  const row = rows[0];
+  const analysisResult = await client.query<LatestAnalysisRow>(
+    `SELECT id, concerns, texture_scores, created_at
+       FROM skin_analyses
+      WHERE user_id = $1 AND status = 'complete' AND deleted_at IS NULL
+      ORDER BY created_at DESC
+      LIMIT 1`,
+    [userId],
+  );
 
-  if (row === undefined) {
+  const [fragrance, profile, analysis] = [
+    await loadFragranceProfile(client, userId),
+    profileResult.rows[0],
+    analysisResult.rows[0],
+  ];
+
+  const analysisTag = analysis === undefined ? 'no-analysis' : `analysis:${analysis.id}`;
+  const quizTag = fragrance === null ? 'no-quiz' : 'quiz';
+
+  if (profile === undefined) {
     return {
       viewer: {
         userId,
-        skinType: 'unsure',
-        concerns: [],
+        skinType: analysis === undefined ? 'unsure' : skinTypeFromHydration(analysis.texture_scores?.hydration, 'unsure'),
+        concerns: analysis?.concerns ?? [],
         climateZone: 'hot_humid',
         budgetMaxNgn: null,
         feedbackAffinity: 0.5,
         fragrance,
       },
-      profileVersion: fragrance === null ? 'no-profile' : 'quiz-only',
+      profileVersion: `${analysisTag}|${quizTag}`,
     };
   }
+
+  const concerns = profile.concerns.length > 0 ? profile.concerns : (analysis?.concerns ?? []);
 
   return {
     viewer: {
       userId,
-      skinType: row.skin_type,
-      concerns: row.concerns,
-      climateZone: row.climate_zone,
-      budgetMaxNgn: row.budget_max_ngn,
+      skinType: skinTypeFromHydration(analysis?.texture_scores?.hydration, profile.skin_type),
+      concerns,
+      climateZone: profile.climate_zone,
+      budgetMaxNgn: profile.budget_max_ngn,
       feedbackAffinity: 0.5,
       fragrance,
     },
-    // The quiz changes recommendations, so it belongs in the version a stored session is keyed on.
-    profileVersion: `${row.updated_at.toISOString()}|${fragrance === null ? 'no-quiz' : 'quiz'}`,
+    profileVersion: `${profile.updated_at.toISOString()}|${analysisTag}|${quizTag}`,
   };
 }
 

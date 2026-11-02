@@ -2,7 +2,7 @@
 
 An AI personal-care assistant: photograph your skin, scan an ingredient label, and get explained body-cream and fragrance recommendations.
 
-This repository contains **five slices of the data layer** — the catalogue and recommendation pipeline, the ingredient-scan lifecycle, recommendation persistence with feedback, label tokenisation, and the perfume path — built to the design in [docs/design/data-layer.md](docs/design/data-layer.md) against the spec in [FreshSkin PRD.md](FreshSkin PRD.md).
+This repository contains **six slices of the data layer** — the catalogue and recommendation pipeline, the ingredient-scan lifecycle, recommendation persistence with feedback, label tokenisation, the perfume path, and skin analysis — built to the design in [docs/design/data-layer.md](docs/design/data-layer.md) against the spec in [FreshSkin PRD.md](FreshSkin PRD.md).
 
 ## What this slice proves
 
@@ -38,6 +38,11 @@ Each claim below is enforced by a test, not by convention:
 | A disliked family is excluded, a liked one ranks first | same file — `family_disliked` rejection and ranking order |
 | The quiz round-trips and rejects contradictory answers | `tests/perfume-db.test.ts` — edit keeps the rest; liking and disliking one family raises `23514` |
 | Perfumes serve end to end and replay | same file — no Gourmand in results when Gourmand is disliked, same ids twice |
+| Tone bands agree with measured pigmentation | `tests/skin.test.ts` — the ITA boundaries, and a contradictory band is refused |
+| Confidence decides usable, low, or refused | same file — 0.5 is low, 0.2 is rejected, `not_skin` is rejected |
+| Dark skin in thin light is refused, not guessed | same file and `skin-db.test.ts` — the bias guard fires on band V/VI at low brightness |
+| A photo actually changes the ranking | `skin-db.test.ts` — hydration 20 on an `unsure` profile becomes `dry` for the recommender |
+| Images purge at 24h exactly once | same file — the second run is a no-op, and the system role has only the grant it needs |
 
 ## Quickstart
 
@@ -73,6 +78,8 @@ src/safety/         the single home of allergen and sensitivity detection
 src/rec/            types, term and rule registries, diversity, explanations, pipeline,
                     affinity, and recommendation/feedback persistence
 src/scans/          parse gating, verdict table, lifecycle, persistence, label tokenisation
+src/skin/           analysis contract, confidence bands, bias guard, persistence
+src/retention/      24-hour image purge across analyses and scans
 src/service/        composition roots for creams and perfumes, shared viewer loading
 src/http/           the only modules that know the wire shapes (recommendation and scan)
 tests/              privilege, safety, pipeline, wire, type-level, end-to-end
@@ -98,7 +105,7 @@ Sharing one constant is the bug this separation prevents.
 - The scent quiz UI and the rest of the interface
 - Similar-to search, layering pairs, and saved items
 - The HTTP framework and routes (the service functions are the seam)
-- Skin analysis and the image pipeline
+- The image pipeline and the vision provider; `completeAnalysis` starts from a model response
 - Authentication, consent ledger, export and erasure jobs
 
 ## Notes for whoever picks this up
