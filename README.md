@@ -2,7 +2,7 @@
 
 An AI personal-care assistant: photograph your skin, scan an ingredient label, and get explained body-cream and fragrance recommendations.
 
-This repository currently contains **slice 1 of the data layer** — the catalogue, the safety engine, the recommendation pipeline, and the HTTP wire shape — built to the design in [docs/design/data-layer.md](docs/design/data-layer.md) against the spec in [FreshSkin PRD.md](FreshSkin PRD.md).
+This repository contains **two slices of the data layer** — the catalogue and recommendation pipeline, then the ingredient-scan lifecycle — built to the design in [docs/design/data-layer.md](docs/design/data-layer.md) against the spec in [FreshSkin PRD.md](FreshSkin PRD.md).
 
 ## What this slice proves
 
@@ -23,6 +23,11 @@ Each claim below is enforced by a test, not by convention:
 | Stage order cannot be skipped | `tests/types.test.ts` — `@ts-expect-error` asserts only the pipeline can build a stage value |
 | The wire carries `recommendation_id` and `excluded[]` | `tests/present.test.ts` — §12.3 shape, snake_case, no domain names leaked |
 | End to end inside the 800 ms budget | `tests/e2e.test.ts` — 127 eligible products, p95 measured over 5 runs |
+| A label we could not read gets no verdict | `tests/scans.test.ts` — the 60% floor, the five-match floor, and the boundary case |
+| `avoid` cannot come from a partial parse | `tests/types.test.ts` — `decideVerdict` will not accept an `InsufficientParse` |
+| The database enforces the same rules | `tests/scans-db.test.ts` — a hand-written `avoid` at 40% raises `23514` |
+| Exactly one worker can finalise a scan | same file — the second completion throws `ScanNotInFlight` |
+| Scan findings are stored and isolated per user | same file — findings rows written, another user sees `null` |
 
 ## Quickstart
 
@@ -56,8 +61,9 @@ src/db/             schema mirror, pools, withUser (transaction-scoped identity)
 src/catalogue/      readiness gate, gated-view reads, projection to domain types
 src/safety/         the single home of allergen and sensitivity detection
 src/rec/            types, term and rule registries, diversity, explanations, pipeline
+src/scans/          parse gating, verdict table, lifecycle, persistence
 src/service/        composition root for GET /recommendations/creams
-src/http/           the only module that knows the §12.3 wire shape
+src/http/           the only modules that know the wire shapes (recommendation and scan)
 tests/              privilege, safety, pipeline, wire, type-level, end-to-end
 scripts/            migrate and seed
 ```
@@ -69,16 +75,17 @@ scripts/            migrate and seed
 They are deliberately not the same number and not the same type:
 
 - `CATALOGUE_READY_AT = 0.95` — is this catalogue record trustworthy enough to recommend? (`src/catalogue/readiness.ts`)
-- `VERDICT_PARSE_FLOOR = 0.60` — did we read enough of this label to accuse it? (arrives with the scan slice)
+- `VERDICT_PARSE_FLOOR = 0.60` — did we read enough of this label to accuse it? (`src/scans/verdict.ts`, with `VERDICT_MIN_MATCHED = 5`)
 
 Sharing one constant is the bug this separation prevents.
 
 ## What is not built yet
 
-- Scans, verdicts, and the OCR worker (next slice)
+- The OCR worker and image pipeline; scans currently accept parsed tokens from a caller
+- Scan submission idempotency (`Idempotency-Key` replay)
 - Profiles and fragrance preferences beyond the read path used here
 - Recommendations persistence, feedback, and saved items
-- The HTTP framework and routes (the service function is the seam)
+- The HTTP framework and routes (the service functions are the seam)
 - Perfume scoring terms
 - Authentication, consent ledger, export and erasure jobs
 
