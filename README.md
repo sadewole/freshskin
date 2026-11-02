@@ -2,7 +2,7 @@
 
 An AI personal-care assistant: photograph your skin, scan an ingredient label, and get explained body-cream and fragrance recommendations.
 
-This repository contains **eight slices of the data layer** — the catalogue and recommendation pipeline, the ingredient-scan lifecycle, recommendation persistence with feedback, label tokenisation, the perfume path, skin analysis, anonymous identity with a consent ledger, and saved items — built to the design in [docs/design/data-layer.md](docs/design/data-layer.md) against the spec in [FreshSkin PRD.md](FreshSkin PRD.md).
+This repository contains **nine slices of the data layer** — the catalogue and recommendation pipeline, the ingredient-scan lifecycle, recommendation persistence with feedback, label tokenisation, the perfume path, skin analysis, anonymous identity with a consent ledger, saved items, and the discovery surfaces — built to the design in [docs/design/data-layer.md](docs/design/data-layer.md) against the spec in [FreshSkin PRD.md](FreshSkin PRD.md).
 
 ## What this slice proves
 
@@ -48,6 +48,9 @@ Each claim below is enforced by a test, not by convention:
 | Withdrawal is an append, and under-16s cannot consent | same file — latest record wins; the minor is refused |
 | Lists are private, idempotent, and revivable | `tests/saved.test.ts` — one live row per list, re-saving revives the tombstone |
 | Owning a perfume lowers novelty for similar scents | same file plus `tests/perfume.test.ts` — owned notes reach the ranker |
+| "Similar to" is deterministic note arithmetic | `tests/similar.test.ts` — heart and base notes weigh more, the anchor is never returned |
+| Cheaper alternatives are filtered before ranking | same file and `discovery-db.test.ts` — every result is under the anchor's price |
+| Pairings lead with an unscented base and flag clashes | `tests/pairing.test.ts` — scented creams are offered with a warning, not hidden |
 
 ## Quickstart
 
@@ -87,6 +90,8 @@ src/skin/           analysis contract, confidence bands, bias guard, persistence
 src/auth/           anonymous sessions (token hashing, expiry, revocation)
 src/consent/        append-only consent ledger and gating
 src/saved/          wishlist and owned lists, and the owned-note feed
+src/rec/similar.ts  note-based similarity for "more like this"
+src/rec/pairing.ts  cream and perfume layering scores
 src/retention/      24-hour image purge across analyses and scans
 src/service/        composition roots for creams and perfumes, shared viewer loading
 src/http/           the only modules that know the wire shapes (recommendation and scan)
@@ -111,7 +116,7 @@ Sharing one constant is the bug this separation prevents.
   text, and the vendor port is not implemented
 - Scan submission idempotency (`Idempotency-Key` replay)
 - The scent quiz UI and the rest of the interface
-- Similar-to search and layering pairs
+- The interface: every surface exists as a service and a wire shape, none as a screen
 - The HTTP framework and routes (the service functions are the seam)
 - The image pipeline and the vision provider; `completeAnalysis` starts from a model response
 - Email OTP accounts on top of anonymous sessions
