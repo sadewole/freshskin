@@ -1,5 +1,6 @@
 import type pg from 'pg';
 import { loadFragranceProfile } from '../rec/fragrance-profile.js';
+import { loadOwnedNotes } from '../saved/items.js';
 import type { ClimateZone, SkinType, ViewerFacts } from '../rec/types.js';
 import type { Sensitivity, Severity } from '../safety/conflicts.js';
 
@@ -64,8 +65,9 @@ export async function loadViewer(client: pg.PoolClient, userId: string): Promise
     [userId],
   );
 
-  const [fragrance, profile, analysis] = [
+  const [fragrance, ownedNotes, profile, analysis] = [
     await loadFragranceProfile(client, userId),
+    await loadOwnedNotes(client, userId),
     profileResult.rows[0],
     analysisResult.rows[0],
   ];
@@ -83,8 +85,9 @@ export async function loadViewer(client: pg.PoolClient, userId: string): Promise
         budgetMaxNgn: null,
         feedbackAffinity: 0.5,
         fragrance,
+        ownedNotes,
       },
-      profileVersion: `${analysisTag}|${quizTag}`,
+      profileVersion: `${analysisTag}|${quizTag}|owned:${ownedNotes.length}`,
     };
   }
 
@@ -99,8 +102,10 @@ export async function loadViewer(client: pg.PoolClient, userId: string): Promise
       budgetMaxNgn: profile.budget_max_ngn,
       feedbackAffinity: 0.5,
       fragrance,
+      ownedNotes,
     },
-    profileVersion: `${profile.updated_at.toISOString()}|${analysisTag}|${quizTag}`,
+    // The owned set changes novelty, so it belongs in the session fingerprint.
+    profileVersion: `${profile.updated_at.toISOString()}|${analysisTag}|${quizTag}|owned:${ownedNotes.length}`,
   };
 }
 

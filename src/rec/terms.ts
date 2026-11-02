@@ -181,11 +181,20 @@ export function perfumeClimateFit(facts: PerfumeFacts | null, v: ViewerFacts): n
   }
 }
 
-/** No owned-list history yet, so novelty is neutral until the wishlist slice lands. */
-export function novelty(facts: PerfumeFacts | null, prefs: FragrancePreferences | null): number {
-  if (facts === null || prefs === null) return 0.7;
-  const clashes = facts.noteNames.filter((note) => prefs.notesAvoided.includes(note)).length;
-  return clamp01(1 - clashes * 0.5);
+/**
+ * Novelty is about what the user already owns, not what they dislike: a perfume made entirely
+ * of notes they own is not novel, however well it scores on taste.
+ */
+export function novelty(
+  facts: PerfumeFacts | null,
+  prefs: FragrancePreferences | null,
+  ownedNotes: readonly string[] = [],
+): number {
+  if (facts === null) return 0.7;
+  if (ownedNotes.length === 0 || facts.noteNames.length === 0) return 0.7;
+
+  const shared = facts.noteNames.filter((note) => ownedNotes.includes(note)).length;
+  return clamp01(1 - shared / facts.noteNames.length);
 }
 
 export function dislikedPenalty(facts: PerfumeFacts | null, prefs: FragrancePreferences | null): number {
@@ -234,7 +243,7 @@ export const PERFUME_TERMS = [
     id: 'novelty',
     weight: 0.06,
     appliesTo: ['perfume'],
-    compute: (c, v) => novelty(perfume(c), v.fragrance),
+    compute: (c, v) => novelty(perfume(c), v.fragrance, v.ownedNotes),
   },
   {
     id: 'disliked_penalty',

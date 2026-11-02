@@ -76,6 +76,8 @@ export interface ViewerFacts {
   readonly feedbackAffinity: Unit;
   /** Null until the scent quiz is completed; perfume terms fall back to neutral priors. */
   readonly fragrance: FragrancePreferences | null;
+  /** Note names from the user's owned perfumes; empty until they mark something as owned. */
+  readonly ownedNotes: readonly string[];
 }
 
 /** Subtraction only. No field can name an allergen, a severity, or raise a ceiling. */

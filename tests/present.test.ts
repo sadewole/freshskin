@@ -12,6 +12,7 @@ const viewer: ViewerFacts = {
   budgetMaxNgn: 12_000,
   feedbackAffinity: 0.5,
   fragrance: null,
+  ownedNotes: [],
 };
 
 const candidate = (id: string, price: number, ingredientId = 'ing-glycerin'): Candidate => ({

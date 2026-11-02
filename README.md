@@ -2,7 +2,7 @@
 
 An AI personal-care assistant: photograph your skin, scan an ingredient label, and get explained body-cream and fragrance recommendations.
 
-This repository contains **seven slices of the data layer** — the catalogue and recommendation pipeline, the ingredient-scan lifecycle, recommendation persistence with feedback, label tokenisation, the perfume path, skin analysis, and anonymous identity with a consent ledger — built to the design in [docs/design/data-layer.md](docs/design/data-layer.md) against the spec in [FreshSkin PRD.md](FreshSkin PRD.md).
+This repository contains **eight slices of the data layer** — the catalogue and recommendation pipeline, the ingredient-scan lifecycle, recommendation persistence with feedback, label tokenisation, the perfume path, skin analysis, anonymous identity with a consent ledger, and saved items — built to the design in [docs/design/data-layer.md](docs/design/data-layer.md) against the spec in [FreshSkin PRD.md](FreshSkin PRD.md).
 
 ## What this slice proves
 
@@ -46,6 +46,8 @@ Each claim below is enforced by a test, not by convention:
 | Sessions resolve only for a live token, and store only a hash | `tests/auth.test.ts` — revoked and expired tokens resolve to null, raw token absent from the table |
 | No image-backed row can exist without image consent | same file — the service throws `ConsentMissing` and the database raises `42501` below it |
 | Withdrawal is an append, and under-16s cannot consent | same file — latest record wins; the minor is refused |
+| Lists are private, idempotent, and revivable | `tests/saved.test.ts` — one live row per list, re-saving revives the tombstone |
+| Owning a perfume lowers novelty for similar scents | same file plus `tests/perfume.test.ts` — owned notes reach the ranker |
 
 ## Quickstart
 
@@ -84,6 +86,7 @@ src/scans/          parse gating, verdict table, lifecycle, persistence, label t
 src/skin/           analysis contract, confidence bands, bias guard, persistence
 src/auth/           anonymous sessions (token hashing, expiry, revocation)
 src/consent/        append-only consent ledger and gating
+src/saved/          wishlist and owned lists, and the owned-note feed
 src/retention/      24-hour image purge across analyses and scans
 src/service/        composition roots for creams and perfumes, shared viewer loading
 src/http/           the only modules that know the wire shapes (recommendation and scan)
@@ -108,7 +111,7 @@ Sharing one constant is the bug this separation prevents.
   text, and the vendor port is not implemented
 - Scan submission idempotency (`Idempotency-Key` replay)
 - The scent quiz UI and the rest of the interface
-- Similar-to search, layering pairs, and saved items
+- Similar-to search and layering pairs
 - The HTTP framework and routes (the service functions are the seam)
 - The image pipeline and the vision provider; `completeAnalysis` starts from a model response
 - Email OTP accounts on top of anonymous sessions

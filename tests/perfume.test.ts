@@ -6,6 +6,7 @@ import {
   dislikedPenalty,
   familyAffinity,
   noteOverlap,
+  novelty,
   performanceFit,
   perfumeClimateFit,
   TERMS_BY_KIND,
@@ -47,6 +48,7 @@ const viewer = (over: Partial<ViewerFacts> = {}): ViewerFacts => ({
   budgetMaxNgn: null,
   feedbackAffinity: 0.5,
   fragrance: prefs(),
+  ownedNotes: [],
   ...over,
 });
 
@@ -120,6 +122,13 @@ describe('perfume terms', () => {
       perfumeClimateFit(heavy, viewer({ climateZone: 'cold' })) >
         perfumeClimateFit(fresh, viewer({ climateZone: 'cold' })),
     );
+  });
+
+  it('drops novelty for a scent built from notes the user owns', () => {
+    const f = facts({ noteNames: ['Rose', 'Cedar'], heartAndBaseNotes: ['Rose', 'Cedar'] });
+    assert.equal(novelty(f, prefs(), []), 0.7, 'no owned list means a neutral prior');
+    assert.ok(novelty(f, prefs(), ['Rose']) < 0.7);
+    assert.equal(novelty(f, prefs(), ['Rose', 'Cedar']), 0);
   });
 
   it('penalises an avoided note', () => {
