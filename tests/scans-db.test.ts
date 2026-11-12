@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { after, before, describe, it } from 'node:test';
 import pg from 'pg';
-import { closePools } from '../src/db/client.js';
+import { closePools } from '../src/db/close.js';
 import { presentScan } from '../src/http/present-scan.js';
 import { completeScan, getScan, ScanNotInFlight, submitScan } from '../src/scans/service.js';
 import type { ParsedToken, ScanSubject } from '../src/scans/verdict.js';

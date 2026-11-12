@@ -1,37 +1,9 @@
+import type { WirePairing, WireSimilar } from '@freshskin/contracts';
 import type { PairingResponse, SimilarResponse } from '../service/discovery.js';
 
 /** Wire shapes for the two discovery surfaces. Like the others: rename, nest, decide nothing. */
 
-export interface WireSimilar {
-  readonly data: {
-    readonly anchor: { readonly id: string; readonly name: string; readonly price_ngn: number | null };
-    readonly cheaper_only: boolean;
-    readonly results: readonly {
-      readonly product_id: string;
-      readonly name: string;
-      readonly score: number;
-      readonly label: string;
-      readonly shared_notes: readonly string[];
-      readonly price_ngn: number | null;
-      readonly price_delta_ngn: number | null;
-    }[];
-  };
-  readonly meta: { readonly request_id: string };
-}
-
-export interface WirePairing {
-  readonly data: {
-    readonly perfume: { readonly id: string; readonly name: string; readonly families: readonly string[] };
-    readonly pairings: readonly {
-      readonly cream_id: string;
-      readonly cream_name: string;
-      readonly score: number;
-      readonly rationale: string;
-      readonly clash: boolean;
-    }[];
-  };
-  readonly meta: { readonly request_id: string };
-}
+export type { WirePairing, WireSimilar } from '@freshskin/contracts';
 
 export function presentSimilar(
   response: SimilarResponse,

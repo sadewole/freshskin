@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@freshskin/contracts':
+        specifier: workspace:*
+        version: link:packages/contracts
       drizzle-orm:
         specifier: ^0.36.4
         version: 0.36.4(@types/pg@8.23.1)(@types/react@18.3.31)(pg@8.23.1)(react@18.3.1)
@@ -28,8 +31,13 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
+  packages/contracts: {}
+
   web:
     dependencies:
+      '@freshskin/contracts':
+        specifier: workspace:*
+        version: link:../packages/contracts
       react:
         specifier: ^18.3.1
         version: 18.3.1

@@ -76,10 +76,34 @@ pnpm test
 
 `pnpm db:reset` does the first three steps in one go.
 
+## Run the app
+
+The server serves both `/api/v1` and the built client from `app/public`. Build the client,
+then start the server:
+
+```bash
+pnpm build          # compiled server in dist/, client in app/public/
+pnpm start          # http://127.0.0.1:3000
+```
+
+For development, run the two watch processes in separate terminals:
+
+```bash
+pnpm dev:server     # tsc --watch + node --watch on dist/app/server.js
+pnpm web:dev        # Vite on :5173, proxying /api to :3000
+```
+
+`pnpm build:server` builds only the server, and `pnpm web:build` builds only the client.
+`app/public/` is generated; do not edit it by hand.
+
 ## Layout
 
 ```
 db/migrations/      hand-written SQL is the source of truth (roles, tables, RLS, views, grants)
+app/                Node HTTP server: routing, cookies, rate limiting, static hosting
+app/public/         generated client build (Vite output); not tracked
+web/                React + Vite client source
+packages/contracts/ type-only wire contracts shared by the server and the client
 src/db/             schema mirror, pools, withUser (transaction-scoped identity)
 src/catalogue/      readiness gate, gated-view reads, projection to domain types
 src/safety/         the single home of allergen and sensitivity detection
@@ -94,12 +118,12 @@ src/rec/similar.ts  note-based similarity for "more like this"
 src/rec/pairing.ts  cream and perfume layering scores
 src/retention/      24-hour image purge across analyses and scans
 src/service/        composition roots for creams and perfumes, shared viewer loading
-src/http/           the only modules that know the wire shapes (recommendation and scan)
-tests/              privilege, safety, pipeline, wire, type-level, end-to-end
+src/http/           presenters that map domain types onto @freshskin/contracts
+tests/              privilege, safety, pipeline, wire, type-level, module-boundary, end-to-end
 scripts/            migrate and seed
 ```
 
-`src/rec/pipeline.ts` is the only file that knows the stage order. `src/http/present.ts` is the only file that knows a snake_case field name.
+`src/rec/pipeline.ts` is the only file that knows the stage order. `packages/contracts` is the only place wire field names are declared.
 
 ## The two thresholds
 
@@ -115,9 +139,6 @@ Sharing one constant is the bug this separation prevents.
 - The OCR call itself and image preprocessing; `completeScanFromText` starts from recognised
   text, and the vendor port is not implemented
 - Scan submission idempotency (`Idempotency-Key` replay)
-- The scent quiz UI and the rest of the interface
-- The interface: every surface exists as a service and a wire shape, none as a screen
-- The HTTP framework and routes (the service functions are the seam)
 - The image pipeline and the vision provider; `completeAnalysis` starts from a model response
 - Email OTP accounts on top of anonymous sessions
 - Export and erasure jobs

@@ -1,3 +1,4 @@
+import type { WireAnalysis } from '@freshskin/contracts';
 import { retakeCopy, type RetakeReason } from '../skin/analysis.js';
 import type { AnalysisRecord } from '../skin/service.js';
 
@@ -5,22 +6,7 @@ import type { AnalysisRecord } from '../skin/service.js';
  * The analysis wire shape (§9 S6). A refusal is a normal response with a reason the client can
  * show, never an error: "we could not read this" is a result.
  */
-export interface WireAnalysis {
-  readonly data: {
-    readonly id: string;
-    readonly status: string;
-    readonly tone_band: string | null;
-    readonly undertone: string | null;
-    readonly evenness_score: number | null;
-    readonly texture_scores: { hydration: number; roughness: number; flakiness: number } | null;
-    readonly concerns: readonly string[];
-    readonly confidence: number | null;
-    readonly evidence: readonly string[];
-    readonly retake: { readonly needed: boolean; readonly reason: string | null };
-    readonly disclaimer: string;
-  };
-  readonly meta: { readonly request_id: string };
-}
+export type { WireAnalysis } from '@freshskin/contracts';
 
 export const ANALYSIS_DISCLAIMER =
   'This is a cosmetic assessment based on one photo. Lighting and camera affect results. ' +

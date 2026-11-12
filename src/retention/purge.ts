@@ -1,4 +1,4 @@
-import { systemPool } from '../db/client.js';
+import { systemPool } from '../db/system.js';
 
 /**
  * The 24-hour image window (§16.2, §12.4).

@@ -9,7 +9,8 @@ import {
   recordConsent,
   UnderageBlocked,
 } from '../src/consent/consent.js';
-import { closePools, withUser } from '../src/db/client.js';
+import { closePools } from '../src/db/close.js';
+import { withUser } from '../src/db/client.js';
 import { submitScan } from '../src/scans/service.js';
 
 const ADMIN_URL = process.env.DATABASE_URL ?? 'postgres://postgres:postgres@127.0.0.1:55432/freshskin';

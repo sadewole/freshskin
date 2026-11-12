@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { after, before, describe, it } from 'node:test';
 import pg from 'pg';
-import { closePools, withUser } from '../src/db/client.js';
+import { closePools } from '../src/db/close.js';
+import { withUser } from '../src/db/client.js';
 import { listSaved, loadOwnedNotes, removeItem, saveItem } from '../src/saved/items.js';
 
 const ADMIN_URL = process.env.DATABASE_URL ?? 'postgres://postgres:postgres@127.0.0.1:55432/freshskin';

@@ -42,11 +42,6 @@ export function sendError(res: ServerResponse, error: HttpError, requestId: stri
 
 /** Rejects oversized bodies before buffering them. */
 export async function readJson(req: IncomingMessage): Promise<unknown> {
-  const contentType = req.headers['content-type'] ?? '';
-  if (!String(contentType).toLowerCase().startsWith('application/json')) {
-    throw new HttpError(415, 'UNSUPPORTED_MEDIA_TYPE', 'Content-Type must be application/json');
-  }
-
   const declared = Number(req.headers['content-length'] ?? '0');
   if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) {
     throw new HttpError(413, 'PAYLOAD_TOO_LARGE', 'Request body is too large');
@@ -62,7 +57,15 @@ export async function readJson(req: IncomingMessage): Promise<unknown> {
     chunks.push(chunk as Buffer);
   }
 
+  // A POST with no body is a valid request (session start, logout). Only a request that
+  // actually carries bytes must declare a JSON content type.
   if (total === 0) return {};
+
+  const contentType = req.headers['content-type'] ?? '';
+  if (!String(contentType).toLowerCase().startsWith('application/json')) {
+    throw new HttpError(415, 'UNSUPPORTED_MEDIA_TYPE', 'Content-Type must be application/json');
+  }
+
   try {
     return JSON.parse(Buffer.concat(chunks).toString('utf8'));
   } catch {

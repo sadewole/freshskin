@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import type { WireItem, WireResponse } from '@freshskin/contracts';
 import type { ExplainedItem, Plan } from '../rec/types.js';
 
 /**
@@ -6,49 +7,7 @@ import type { ExplainedItem, Plan } from '../rec/types.js';
  * no decisions — a rename and a nesting. Nothing in rec/ knows a snake_case field name.
  */
 
-export interface WireProduct {
-  readonly id: string;
-  readonly name: string;
-  readonly brand: string;
-  readonly category: string;
-  readonly price_ngn: number | null;
-  readonly attributes: { readonly fragrance_free: boolean | null; readonly richness: string | null };
-}
-
-export interface WireItem {
-  readonly recommendation_id: string;
-  readonly rank: number;
-  readonly score: number;
-  readonly product: WireProduct;
-  readonly reason: string;
-  readonly breakdown: Readonly<Record<string, number>>;
-  readonly excluded_conflicts: readonly string[];
-  readonly flags: readonly string[];
-}
-
-export interface WireExcluded {
-  readonly product_id: string;
-  readonly name: string;
-  readonly code: string;
-  readonly reason: string;
-}
-
-export interface WireResponse {
-  readonly data: {
-    readonly session_id: string;
-    readonly algorithm_version: string;
-    readonly profile_version: string;
-    readonly items: readonly WireItem[];
-    readonly excluded: readonly WireExcluded[];
-    readonly total_matched: number;
-    readonly filters_applied: Readonly<Record<string, unknown>>;
-  };
-  readonly meta: {
-    readonly request_id: string;
-    readonly served_in_ms: number;
-    readonly cached: boolean;
-  };
-}
+export type { WireExcluded, WireItem, WireProduct, WireResponse } from '@freshskin/contracts';
 
 /** Stable per (session, product): the same recommendation always carries the same id. */
 export function recommendationId(sessionId: string, productId: string): string {

@@ -1,21 +1,8 @@
-import type { SavedItem, SavedList } from '../saved/items.js';
+import type { WireSaved } from '@freshskin/contracts';
+import type { SavedItem } from '../saved/items.js';
 
 /** The saved-items wire shape. Two lists, one response, no per-list endpoint needed. */
-export interface WireSaved {
-  readonly data: {
-    readonly items: readonly {
-      readonly product_id: string;
-      readonly name: string;
-      readonly brand: string;
-      readonly category: string;
-      readonly price_ngn: number | null;
-      readonly list: SavedList;
-      readonly saved_at: string;
-    }[];
-    readonly counts: Readonly<Record<SavedList, number>>;
-  };
-  readonly meta: { readonly request_id: string };
-}
+export type { WireSaved } from '@freshskin/contracts';
 
 export function presentSaved(items: readonly SavedItem[], meta: { requestId: string }): WireSaved {
   return {

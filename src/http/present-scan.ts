@@ -1,3 +1,4 @@
+import type { WireFinding, WireScanResponse } from '@freshskin/contracts';
 import { explainVerdict, type Finding } from '../scans/verdict.js';
 import type { ScanResult } from '../scans/service.js';
 
@@ -6,26 +7,7 @@ import type { ScanResult } from '../scans/service.js';
  * no decisions. A refused verdict is a normal response with a retake reason, never a 500.
  */
 
-export interface WireFinding {
-  readonly label: string;
-  readonly severity: string;
-  readonly reason: string;
-  readonly source: string | null;
-}
-
-export interface WireScanResponse {
-  readonly data: {
-    readonly id: string;
-    readonly status: 'complete' | 'low_confidence';
-    readonly match_rate: number;
-    readonly matched_count: number;
-    readonly verdict: 'good' | 'okay' | 'avoid' | null;
-    readonly summary: string;
-    readonly findings: readonly WireFinding[];
-    readonly retake: { readonly needed: boolean; readonly reason: string | null };
-  };
-  readonly meta: { readonly request_id: string };
-}
+export type { WireFinding, WireScanResponse } from '@freshskin/contracts';
 
 const toWireFinding = (finding: Finding): WireFinding => ({
   label: finding.label,

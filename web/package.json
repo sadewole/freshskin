@@ -10,6 +10,7 @@
     "icons": "node scripts/make-icons.mjs"
   },
   "dependencies": {
+    "@freshskin/contracts": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "sharp": "^0.33.5"
