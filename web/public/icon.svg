@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="FreshSkin">
+  <rect width="512" height="512" rx="112" fill="#0f172a"/>
+  <path d="M256 96c-64 56-112 108-112 176a112 112 0 0 0 224 0c0-68-48-120-112-176z" fill="#5eead4"/>
+  <path d="M256 168c-30 30-54 60-54 98a54 54 0 0 0 108 0c0-38-24-68-54-98z" fill="#0f172a" opacity="0.35"/>
+</svg>

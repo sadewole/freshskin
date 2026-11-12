@@ -519,10 +519,24 @@ const CSP = [
   "style-src 'self'",
   "img-src 'self' data:",
   "connect-src 'self'",
+  "worker-src 'self'",
+  "manifest-src 'self'",
   "base-uri 'none'",
   "form-action 'self'",
   "frame-ancestors 'none'",
 ].join('; ');
+
+/**
+ * Assets are served from the Vite build (`pnpm web:build`), which writes into `app/public`.
+ * Hashed filenames may be cached forever; the three files whose names are fixed must not be,
+ * or a new deploy ships a shell that keeps pointing at the old bundle.
+ */
+const UNCACHED = new Set(['.html', '.webmanifest']);
+
+function cacheControl(pathname: string): string {
+  if (UNCACHED.has(extname(pathname)) || pathname === '/sw.js') return 'no-cache';
+  return 'public, max-age=31536000, immutable';
+}
 
 async function serveStatic(pathname: string): Promise<{ body: Buffer; type: string } | null> {
   const relative = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
@@ -615,7 +629,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
     res.writeHead(200, {
       'content-type': asset.type,
       'content-length': asset.body.length,
-      'cache-control': extname(url.pathname) === '.html' ? 'no-store' : 'public, max-age=3600',
+      'cache-control': cacheControl(url.pathname),
       'x-content-type-options': 'nosniff',
       'referrer-policy': 'same-origin',
       'content-security-policy': CSP,

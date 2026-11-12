@@ -4,7 +4,10 @@
   "type": "module",
   "scripts": {
     "test": "tsc -p tsconfig.build.json && node --test \"dist/tests/*.test.js\"",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && pnpm --filter @freshskin/web typecheck",
+    "web:dev": "pnpm --filter @freshskin/web dev",
+    "web:build": "pnpm --filter @freshskin/web build",
+    "web:icons": "pnpm --filter @freshskin/web icons",
     "db:up": "docker rm -f freshskin-pg >/dev/null 2>&1; docker run -d --name freshskin-pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=freshskin -p 55432:5432 postgres:16",
     "db:migrate": "node scripts/migrate.mjs",
     "db:seed": "node scripts/seed.mjs",

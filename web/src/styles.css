@@ -1,0 +1,324 @@
+/* FreshSkin shell styles.
+ *
+ * Plain CSS with custom properties. One file, no framework: the bundle is already the largest
+ * thing on a 3G connection, and the design here is a small set of repeated patterns (panel,
+ * card, row, chip). If this grows past a few hundred lines, split it per-component and let
+ * Vite bundle the result — do not reach for a CSS-in-JS runtime.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --accent: #0f766e;
+  --accent-ink: #ffffff;
+  --good: #15803d;
+  --okay: #a16207;
+  --avoid: #b91c1c;
+  --radius: 14px;
+  --gap: 1rem;
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --ink: #e2e8f0;
+    --muted: #94a3b8;
+    --line: #334155;
+    --accent: #5eead4;
+    --accent-ink: #0f172a;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.skip {
+  position: absolute;
+  left: -999px;
+}
+.skip:focus {
+  left: 1rem;
+  top: 1rem;
+  z-index: 10;
+  padding: 0.5rem 1rem;
+  background: var(--surface);
+}
+
+.topbar {
+  padding: var(--gap) 1.25rem 0.5rem;
+}
+.topbar h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+}
+.tagline {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 0 1.25rem 2rem;
+}
+
+footer {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 2rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: 0.875rem;
+}
+.error {
+  color: var(--avoid);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- navigation */
+
+.tabs {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  gap: 0.25rem;
+  margin: 0.5rem 0 var(--gap);
+  padding: 0.25rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.tab {
+  flex: 1;
+  padding: 0.6rem;
+  text-align: center;
+  text-decoration: none;
+  color: var(--muted);
+  border-radius: calc(var(--radius) - 4px);
+  font-size: 0.9rem;
+}
+.tab[aria-current='page'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------- layout */
+
+.panel,
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: var(--gap);
+  margin-bottom: var(--gap);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: var(--gap);
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.card-head h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.score {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* ---------------------------------------------------------------- controls */
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  padding: 0.55rem 1rem;
+  background: var(--surface);
+  color: var(--ink);
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+button.primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: transparent;
+  font-weight: 600;
+}
+button.ghost {
+  background: transparent;
+}
+button.small {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.2rem;
+}
+.seg {
+  border: 0;
+  background: transparent;
+  padding: 0.4rem 0.9rem;
+}
+.seg[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.chip {
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.85rem;
+  background: transparent;
+}
+.chip[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: transparent;
+}
+.chip-static {
+  display: inline-block;
+  margin-right: 0.3rem;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+}
+
+.check {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  margin: 0.4rem 0;
+}
+
+.filter {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.5rem 0.65rem;
+}
+textarea {
+  width: 100%;
+  resize: vertical;
+  margin-bottom: var(--gap);
+}
+.filter input {
+  width: 7.5rem;
+}
+
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--gap);
+}
+legend {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+
+details summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+dl {
+  margin: 0;
+}
+dd {
+  margin: 0 0 0.5rem;
+}
+
+/* ---------------------------------------------------------------- verdicts */
+
+.verdict {
+  border-left: 4px solid var(--line);
+  padding-left: 0.9rem;
+}
+.verdict.good {
+  border-color: var(--good);
+}
+.verdict.okay {
+  border-color: var(--okay);
+}
+.verdict.avoid {
+  border-color: var(--avoid);
+}
+.verdict h3 {
+  margin: 0 0 0.4rem;
+}
+.finding {
+  margin: 0.35rem 0;
+  font-size: 0.9rem;
+}
