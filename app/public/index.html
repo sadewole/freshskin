@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="description" content="Skincare and scent that actually fits you." />
+    <title>FreshSkin</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="topbar">
+      <h1>FreshSkin</h1>
+      <p class="tagline">Skincare and scent that actually fits you.</p>
+    </header>
+
+    <main id="main" tabindex="-1">
+      <section id="consent-panel" class="panel" hidden aria-labelledby="consent-title">
+        <h2 id="consent-title">Before we start</h2>
+        <p class="muted">
+          FreshSkin uses a photo of your skin and photographs of product labels. You choose what
+          we may process, and you can change this at any time.
+        </p>
+        <label class="check">
+          <input type="checkbox" data-consent="terms" />
+          <span>I agree to the terms</span>
+        </label>
+        <label class="check">
+          <input type="checkbox" data-consent="privacy" />
+          <span>I have read the privacy policy</span>
+        </label>
+        <label class="check">
+          <input type="checkbox" data-consent="image_processing" />
+          <span>I allow my photos to be analysed (deleted within 24 hours)</span>
+        </label>
+        <label class="check">
+          <input type="checkbox" data-consent="model_training" />
+          <span>Optional: allow my photos to improve the model</span>
+        </label>
+        <button id="consent-save" class="primary">Continue</button>
+        <p class="muted small">FreshSkin is not a medical device and does not diagnose skin conditions.</p>
+      </section>
+
+      <nav class="tabs" aria-label="Sections">
+        <button class="tab" data-view="home" aria-current="page">Home</button>
+        <button class="tab" data-view="scan">Scan</button>
+        <button class="tab" data-view="saved">Saved</button>
+        <button class="tab" data-view="profile">Profile</button>
+      </nav>
+
+      <section id="view-home" class="view">
+        <div class="row">
+          <div class="segmented" role="group" aria-label="Product kind">
+            <button class="seg" data-kind="cream" aria-pressed="true">Creams</button>
+            <button class="seg" data-kind="perfume" aria-pressed="false">Perfumes</button>
+          </div>
+          <label class="filter">
+            Max price ₦
+            <input id="max-price" type="number" inputmode="numeric" min="0" step="1000" placeholder="any" />
+          </label>
+        </div>
+
+        <div id="quiz" class="panel" hidden aria-labelledby="quiz-title">
+          <h2 id="quiz-title">Tell us what you like</h2>
+          <p class="muted">A short quiz makes perfume suggestions personal. Skip it and we will show what is popular.</p>
+          <fieldset>
+            <legend>Families you like</legend>
+            <div id="families-liked" class="chips"></div>
+          </fieldset>
+          <fieldset>
+            <legend>Families to avoid</legend>
+            <div id="families-disliked" class="chips"></div>
+          </fieldset>
+          <label class="check">
+            Strength
+            <select id="strength">
+              <option value="light">Light</option>
+              <option value="moderate" selected>Moderate</option>
+              <option value="strong">Strong</option>
+              <option value="very_strong">Very strong</option>
+            </select>
+          </label>
+          <button id="quiz-save" class="primary">Save preferences</button>
+        </div>
+
+        <div id="results" aria-live="polite"></div>
+      </section>
+
+      <section id="view-scan" class="view" hidden>
+        <h2>Scan an ingredient label</h2>
+        <p class="muted">
+          Type or paste the ingredients exactly as printed. The photo pipeline is not connected
+          yet, so this screen feeds the same matcher the worker will use.
+        </p>
+        <textarea id="label-text" rows="6" placeholder="Ingredients: Aqua, Glycerin, Fragrance, ..."></textarea>
+        <div class="row">
+          <button id="scan-run" class="primary">Check this label</button>
+          <span id="scan-status" class="muted small" role="status"></span>
+        </div>
+        <div id="scan-result" aria-live="polite"></div>
+      </section>
+
+      <section id="view-saved" class="view" hidden>
+        <h2>Saved</h2>
+        <div id="saved-list" aria-live="polite"></div>
+      </section>
+
+      <section id="view-profile" class="view" hidden>
+        <h2>Profile</h2>
+        <div id="profile-summary"></div>
+        <h3>Permissions</h3>
+        <div id="profile-consents"></div>
+        <button id="logout" class="secondary">End session</button>
+      </section>
+    </main>
+
+    <footer>
+      <p class="muted small">
+        Cosmetic guidance only, not medical advice. If you have a skin condition or a severe
+        reaction, see a dermatologist.
+      </p>
+    </footer>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
