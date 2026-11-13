@@ -102,7 +102,7 @@ fetch, `SameSite=Lax` host-only cookies, `assertSameOrigin` CSRF check, and
 `connect-src 'self'` CSP. Splitting origins touches all five — this section is the
 shared reference so parallel sessions don't collide.
 
-### 7.1 Target layout (mechanical moves first, zero logic changes)
+### 7.1 Target layout — DONE (3d9fa0d, 191 tests pass)
 
 ```
 apps/
@@ -140,9 +140,9 @@ Integration surface = `packages/contracts` + env schema (`VITE_API_BASE_URL`,
 `APP_ORIGIN`, `COOKIE_DOMAIN`). No cross-lane imports. Each lane verifies with its
 own typecheck + build; shared changes require a decision note in `docs/decisions/`.
 
-### 7.4 Open addition
+### 7.4 Decided
 
-7. Cross-origin auth: parent-domain cookie (`.freshskin.com`, keeps HttpOnly +
-`SameSite=Lax`, PRD-anticipated) vs `Authorization` bearer header (larger client
-change, no cookie CSRF surface) vs app-origin `/api` proxy (keeps same-origin,
-couples deploys — against §15.1 rationale).
+7. ~~Cross-origin auth~~ — **decided** (`docs/decisions/0002-cross-origin-auth.md`,
+   2026-11-14): host-only cookie on `api.freshskin.com` + `credentials: 'include'`;
+   `APP_ORIGIN` allowlist replaces `assertSameOrigin`; preflight + `Vary: Origin` on
+   all API responses. API lane unblocked.
