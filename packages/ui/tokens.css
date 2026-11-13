@@ -1,0 +1,64 @@
+/* FreshSkin design tokens — Phase 0.
+ *
+ * Values sourced 1:1 from the Landing mockup (`docs/design/design system/Landing.dc.html`):
+ * the <helmet> block and inline styles. Components must consume these custom properties;
+ * no hardcoded hex values outside this file.
+ *
+ * Semantic aliases (--bg, --surface, --ink, ...) keep the names `styles.css` already uses,
+ * so the Phase 1 reskin touches only values, not call sites.
+ */
+
+:root {
+  /* ---- brand palette (mockup) ---- */
+  --cream: #fbf5ec;
+  --cream-2: #fffcf7;
+  --ink-brand: #2e1b14;
+  --ink-soft: #5a463c;
+  --muted-brand: #6b5448;
+  --berry: #a62b52;
+  --berry-deep: #7c1f3e;
+  --green: #35604a;
+  --line-brand: #e6d8c8;
+  --blush: #f6dcd6;
+  --rose: #f3d5be;
+
+  /* ---- type ---- */
+  --font: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+
+  /* ---- shape & space (mockup: cards 28px, phone/pill 36px/999px) ---- */
+  --radius: 14px;
+  --radius-card: 28px;
+  --radius-pill: 999px;
+  --gap: 1rem;
+
+  /* ---- semantic aliases: light theme (mockup ground) ---- */
+  color-scheme: light dark;
+  --bg: var(--cream);
+  --surface: var(--cream-2);
+  --ink: var(--ink-brand);
+  --muted: var(--muted-brand);
+  --line: var(--line-brand);
+  --accent: var(--berry);
+  --accent-ink: var(--cream-2);
+  --good: #2e7d46;
+  --okay: #9a6b0f;
+  --avoid: #b91c1c;
+}
+
+/* Derived dark theme: the mockup is light-only, so this is a FreshSkin derivation
+ * (deep plum-brown ground, cream ink) rather than a mockup value. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #211411;
+    --surface: #2e1c19;
+    --ink: #f6e9dd;
+    --muted: #c7a794;
+    --line: #4a322c;
+    --accent: #de8ba6;
+    --accent-ink: #2a1218;
+    --good: #86d99b;
+    --okay: #e5b85c;
+    --avoid: #f08a8a;
+  }
+}

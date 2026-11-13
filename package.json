@@ -3,18 +3,18 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "tsc -p tsconfig.build.json && node --test \"dist/tests/*.test.js\"",
+    "test": "tsc -p tsconfig.build.json && node --test \"dist/apps/api/tests/*.test.js\"",
     "typecheck": "tsc --noEmit && pnpm --filter @freshskin/web typecheck",
     "build": "pnpm build:server && pnpm web:build",
     "build:server": "tsc -p tsconfig.server.json",
-    "start": "node dist/app/server.js",
-    "dev:server": "node scripts/dev-server.mjs",
+    "start": "node dist/apps/api/app/server.js",
+    "dev:server": "node apps/api/scripts/dev-server.mjs",
     "web:dev": "pnpm --filter @freshskin/web dev",
     "web:build": "pnpm --filter @freshskin/web build",
     "web:icons": "pnpm --filter @freshskin/web icons",
     "db:up": "docker rm -f freshskin-pg >/dev/null 2>&1; docker run -d --name freshskin-pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=freshskin -p 55432:5432 postgres:16",
-    "db:migrate": "node scripts/migrate.mjs",
-    "db:seed": "node scripts/seed.mjs",
+    "db:migrate": "node apps/api/scripts/migrate.mjs",
+    "db:seed": "node apps/api/scripts/seed.mjs",
     "db:reset": "pnpm db:up && sleep 3 && DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/freshskin pnpm db:migrate && DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/freshskin pnpm db:seed"
   },
   "dependencies": {

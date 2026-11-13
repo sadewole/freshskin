@@ -42,4 +42,4 @@ process.on('SIGTERM', shutdown);
 
 await buildOnce();
 start([tsc, '-p', 'tsconfig.server.json', '--watch', '--preserveWatchOutput']);
-start(['--watch', 'dist/app/server.js']);
+start(['--watch', 'dist/apps/api/app/server.js']);

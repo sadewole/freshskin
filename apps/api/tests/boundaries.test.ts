@@ -10,10 +10,10 @@ import { fileURLToPath } from 'node:url';
  * points and the test-only pool closer. This test turns that sentence into a failing test.
  */
 
-const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
-const SERVER_ENTRY = 'app/server.ts';
-const SYSTEM_MODULE = 'src/db/system.ts';
-const ALLOWED_IMPORTERS = new Set(['src/db/close.ts', 'src/retention/purge.ts']);
+const ROOT = resolve(fileURLToPath(new URL('../../../..', import.meta.url)));
+const SERVER_ENTRY = 'apps/api/app/server.ts';
+const SYSTEM_MODULE = 'apps/api/src/db/system.ts';
+const ALLOWED_IMPORTERS = new Set(['apps/api/src/db/close.ts', 'apps/api/src/retention/purge.ts']);
 
 const normalise = (path: string): string => relative(ROOT, path).split(sep).join('/');
 
@@ -71,12 +71,12 @@ describe('module boundaries', () => {
     assert.equal(
       reachable.has(SYSTEM_MODULE),
       false,
-      `${SERVER_ENTRY} must not import ${SYSTEM_MODULE}; use src/db/client.ts instead`,
+      `${SERVER_ENTRY} must not import ${SYSTEM_MODULE}; use apps/api/src/db/client.ts instead`,
     );
   });
 
   it('only workers and the pool closer import the system pool', async () => {
-    const files = [...(await sourceFiles(resolve(ROOT, 'src'))), ...(await sourceFiles(resolve(ROOT, 'app')))];
+    const files = [...(await sourceFiles(resolve(ROOT, 'apps/api/src'))), ...(await sourceFiles(resolve(ROOT, 'apps/api/app')))];
     for (const file of files) {
       const name = normalise(file);
       if (ALLOWED_IMPORTERS.has(name)) continue;

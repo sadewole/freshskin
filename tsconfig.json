@@ -15,10 +15,10 @@
     "types": ["node"]
   },
   "include": [
-    "src/**/*.ts",
-    "tests/**/*.ts",
-    "app/**/*.ts",
+    "apps/api/src/**/*.ts",
+    "apps/api/tests/**/*.ts",
+    "apps/api/app/**/*.ts",
     "packages/contracts/src/**/*.ts",
-    "scripts/**/*.mjs"
+    "apps/api/scripts/**/*.mjs"
   ]
 }

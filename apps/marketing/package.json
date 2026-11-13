@@ -1,0 +1,12 @@
+{
+  "name": "@freshskin/marketing",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'marketing scaffold pending (Phase 3)'",
+    "build": "echo 'marketing scaffold pending (Phase 3)'"
+  },
+  "dependencies": {
+    "@freshskin/ui": "workspace:*"
+  }
+}

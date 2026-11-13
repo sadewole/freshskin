@@ -7,5 +7,5 @@
     "declaration": false,
     "sourceMap": true
   },
-  "include": ["src/**/*.ts", "app/**/*.ts", "packages/contracts/src/**/*.ts"]
+  "include": ["apps/api/src/**/*.ts", "apps/api/app/**/*.ts", "packages/contracts/src/**/*.ts"]
 }

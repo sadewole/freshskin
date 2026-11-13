@@ -93,3 +93,56 @@ Static, CDN-hosted, SEO-focused; consumes Phase 0 tokens so brand matches the ap
 ## 6. Suggested sequencing
 
 Phase 0 → Phase 1 (shippable visual win, zero backend risk) → Phase 2 (core loop: scan → verdict) → Phase 4 basics (installable + offline shell) → Phase 3 (marketing, needs brand settled) → Phase 5 (polish). Phases 3 and 4 can swap if acquisition pressure comes first.
+
+## 7. Multi-origin hosting & parallel-agent lanes (2026-11-13, supersedes §4 + §6 order)
+
+Per PRD §15.1 the three origins deploy independently. The current repo serves API +
+app shell from one Node process (`app/server.ts` → `app/public`), with same-origin
+fetch, `SameSite=Lax` host-only cookies, `assertSameOrigin` CSRF check, and
+`connect-src 'self'` CSP. Splitting origins touches all five — this section is the
+shared reference so parallel sessions don't collide.
+
+### 7.1 Target layout (mechanical moves first, zero logic changes)
+
+```
+apps/
+  web/          ← current web/ (PWA → app.freshskin.com)
+  marketing/    ← new static site (→ freshskin.com, Phase 3)
+  api/          ← current src/ + app/ merged (→ api.freshskin.com)
+packages/
+  contracts/    ← existing wire types; versioned integration surface
+  ui/           ← new: tokens.css + shared primitives (web + marketing consume)
+docs/ scripts/ ← stay; tests split per app later
+```
+
+`pnpm-workspace.yaml`, root scripts (`web:build`, `build:server`), tsconfig
+references, and `vite.config.ts` `outDir` (`../app/public` → per-app `dist/`) move
+with the folders. Land the moves atomically on one branch before fanning out.
+
+### 7.2 Origin-split deltas (apps/api lane; web/marketing blocked only on auth + env names)
+
+1. `apps/web` client: `BASE = '/api/v1'` → `VITE_API_BASE_URL`, `credentials: 'include'`.
+2. CORS: replace `assertSameOrigin` with origin allowlist (`APP_ORIGIN`) + `Vary: Origin`; handle `OPTIONS` preflight. API never serves HTML.
+3. **Auth (blocker, §7.4):** host-only `app.` cookie is never sent to `api.` — decide parent-domain cookie vs bearer token before the api lane finishes.
+4. CSP: `connect-src` gains the api origin; fonts must be self-hosted woff2 (a Google Fonts `<link>` violates the shipped `style-src 'self'` — Phase 0 left this open, web lane fixes it).
+5. Deploys: `apps/web/dist` → app origin (or CDN + fallback); `apps/api` → api origin; `apps/marketing` static → CDN. UTM: marketing CTA → app URL carries params; app stores them server-side (§15.4).
+
+### 7.3 Lane ownership (no cross-lane writes)
+
+| Lane | Owns | May read |
+| --- | --- | --- |
+| Web (PWA) | `apps/web` | `packages/ui`, `packages/contracts` |
+| Marketing | `apps/marketing` | `packages/ui`, `packages/contracts` |
+| API | `apps/api` | `packages/contracts` |
+| Shared | `packages/contracts`, `packages/ui`, `docs/decisions/` | — proposal-only, one writer at a time |
+
+Integration surface = `packages/contracts` + env schema (`VITE_API_BASE_URL`,
+`APP_ORIGIN`, `COOKIE_DOMAIN`). No cross-lane imports. Each lane verifies with its
+own typecheck + build; shared changes require a decision note in `docs/decisions/`.
+
+### 7.4 Open addition
+
+7. Cross-origin auth: parent-domain cookie (`.freshskin.com`, keeps HttpOnly +
+`SameSite=Lax`, PRD-anticipated) vs `Authorization` bearer header (larger client
+change, no cookie CSRF surface) vs app-origin `/api` proxy (keeps same-origin,
+couples deploys — against §15.1 rationale).

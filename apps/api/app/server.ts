@@ -22,11 +22,14 @@ import { SESSION_COOKIE } from './session.js';
  *
  * The PRD specifies Next.js. This environment's Node cannot dlopen native binaries, and Next's
  * SWC compiler is one, so a Next app could not be built or verified here. See
- * docs/decisions/0001-app-shell.md. The routes in `app/routes/` are the port target: they are
- * thin, they own no policy, and every one of them calls a service function.
+ * docs/decisions/0001-app-shell.md. The routes in `apps/api/app/routes/` are the port target:
+ * they are thin, they own no policy, and every one of them calls a service function.
+ *
+ * Transitional serving: until the origin split (ui-workflow §7) lands, this process still
+ * serves the built client for local development. It must not gain app-specific logic.
  */
 
-const PUBLIC_DIR = resolve(process.cwd(), 'app', 'public');
+const PUBLIC_DIR = resolve(process.cwd(), 'apps', 'api', 'app', 'public');
 const DEV_ENDPOINTS = process.env.ALLOW_DEV_ENDPOINTS === '1';
 
 const limiter = new RateLimiter(240);

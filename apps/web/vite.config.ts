@@ -57,7 +57,7 @@ export default defineConfig({
     }),
   ],
   build: {
-    outDir: resolve(__dirname, '../app/public'),
+    outDir: resolve(__dirname, '../../dist/apps/web'),
     emptyOutDir: true,
     target: 'es2022',
     sourcemap: false,
@@ -68,7 +68,7 @@ export default defineConfig({
     },
   },
   server: {
-    // In development the Vite dev server stands in for `app/server.ts`, so API calls and the
+    // In development the Vite dev server stands in for `apps/api/app/server.ts`, so API calls and the
     // session cookie need to reach the real Node process.
     port: 5173,
     proxy: {
