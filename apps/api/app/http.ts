@@ -100,24 +100,45 @@ export function clearSessionCookie(): string {
   return 'fs_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0';
 }
 
-/**
- * Same-origin check for mutating requests. A browser sends Origin on cross-origin writes, so
- * rejecting a foreign Origin blocks the simple CSRF cases without a token round trip.
- */
-export function assertSameOrigin(req: IncomingMessage): void {
-  const origin = req.headers.origin;
-  if (origin === undefined) return;
-  const host = req.headers.host;
-  if (host === undefined) throw new HttpError(400, 'MISSING_HOST', 'Host header required');
-  let parsed: URL;
-  try {
-    parsed = new URL(origin);
-  } catch {
-    throw new HttpError(403, 'BAD_ORIGIN', 'Origin is not a valid URL');
-  }
-  if (parsed.host !== host) throw new HttpError(403, 'BAD_ORIGIN', 'Cross-origin request refused');
-}
+/** @deprecated Use {@link assertAllowedOrigin} (decision 0002). Kept for reference only. */
 
 export function secureCookieFlag(): string {
   return process.env.NODE_ENV === 'production' ? '; Secure' : '';
+}
+
+/**
+ * Cross-origin policy (decision 0002). The app origin (`APP_ORIGIN`,
+ * e.g. `https://app.freshskin.com`) may call the API with credentials.
+ * Same-site `SameSite=Lax` permits the host-only api cookie on those
+ * fetches, so no `Domain` attribute and no bearer tokens.
+ *
+ * Missing `Origin` (curl, health checks, same-origin navigations) stays allowed.
+ */
+export function appOrigin(): string | null {
+  const value = (process.env.APP_ORIGIN ?? '').trim().replace(/\/+$/, '');
+  return value.length === 0 ? null : value;
+}
+
+export function corsHeaders(req: IncomingMessage): Record<string, string> {
+  const allowed = appOrigin();
+  const origin = req.headers.origin;
+  if (allowed === null || origin === undefined || origin !== allowed) return {};
+  return {
+    'access-control-allow-origin': allowed,
+    vary: 'Origin',
+    'access-control-allow-credentials': 'true',
+  };
+}
+
+/**
+ * Replaces host-equality with the explicit allowlist. A browser sends `Origin` on
+ * cross-origin writes; a foreign `Origin` (or a malformed one) is refused. Requests with
+ * no `Origin` predate CORS and are not cross-origin writes.
+ */
+export function assertAllowedOrigin(req: IncomingMessage): void {
+  const origin = req.headers.origin;
+  if (origin === undefined) return;
+  const allowed = appOrigin();
+  if (allowed !== null && origin === allowed) return;
+  throw new HttpError(403, 'BAD_ORIGIN', 'Cross-origin request refused');
 }

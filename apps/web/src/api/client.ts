@@ -41,7 +41,13 @@ interface RequestOptions {
   readonly query?: Record<string, string | number | boolean | null | undefined>;
 }
 
-const BASE = '/api/v1';
+/**
+ * API origin (decision 0002). Same-origin `/api/v1` by default so local development —
+ * Vite on :5173 proxying to the dev server — works with no env. Production sets
+ * `VITE_API_BASE_URL=https://api.freshskin.com/api/v1`; the host-only api cookie rides
+ * along because the origins are same-site and credentials are included.
+ */
+const BASE = import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, '') || '/api/v1';
 
 function buildUrl(path: string, query: RequestOptions['query']): string {
   const url = `${BASE}${path}`;
@@ -61,7 +67,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   const response = await fetch(buildUrl(path, options.query), {
     method,
-    credentials: 'same-origin',
+    credentials: 'include',
     headers: hasBody ? { 'content-type': 'application/json' } : {},
     ...(hasBody ? { body: JSON.stringify(options.body) } : {}),
   });

@@ -4,7 +4,8 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { extname, resolve, sep } from 'node:path';
 import { resolveSession } from '../src/auth/session.js';
 import {
-  assertSameOrigin,
+  assertAllowedOrigin,
+  corsHeaders,
   HttpError,
   MAX_BODY_BYTES,
   parseCookies,
@@ -118,8 +119,24 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
   const segments = url.pathname.split('/').filter((segment) => segment.length > 0);
   const isApi = segments[0] === 'api';
 
+  // CORS headers go on every API response — success, error, and rate-limited —
+  // or the browser hides the real status from the app. Static-asset serving below is
+  // same-origin only and carries no CORS headers.
+  const cors = isApi ? corsHeaders(req) : {};
+  for (const [key, value] of Object.entries(cors)) res.setHeader(key, value);
+
   try {
     if (isApi) {
+      if (req.method === 'OPTIONS') {
+        res.writeHead(204, {
+          'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'access-control-allow-headers': 'content-type',
+          'access-control-max-age': '86400',
+          'content-length': '0',
+        });
+        res.end();
+        return;
+      }
       const wait = limiter.take(clientKey(req.headers['x-forwarded-for'] as string | undefined, req.socket.remoteAddress));
       if (wait > 0) {
         res.setHeader('retry-after', String(wait));
@@ -127,7 +144,7 @@ async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> 
       }
     }
 
-    if (req.method !== 'GET' && req.method !== 'HEAD') assertSameOrigin(req);
+    if (req.method !== 'GET' && req.method !== 'HEAD') assertAllowedOrigin(req);
 
     const candidate = routes.find((route) => route.method === req.method && match(route, segments) !== null);
 
