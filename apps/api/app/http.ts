@@ -133,12 +133,26 @@ export function corsHeaders(req: IncomingMessage): Record<string, string> {
 /**
  * Replaces host-equality with the explicit allowlist. A browser sends `Origin` on
  * cross-origin writes; a foreign `Origin` (or a malformed one) is refused. Requests with
- * no `Origin` predate CORS and are not cross-origin writes.
+ * no `Origin` predate CORS and are not cross-origin writes. When `APP_ORIGIN` is unset
+ * (local dev through the Vite proxy, or the transitional same-origin serving), an `Origin`
+ * that matches the request's own `Host` is same-origin and stays allowed.
  */
+export function isSameOrigin(req: IncomingMessage): boolean {
+  const origin = req.headers.origin;
+  const host = req.headers.host;
+  if (origin === undefined || host === undefined) return false;
+  try {
+    return new URL(origin).host.toLowerCase() === host.toLowerCase();
+  } catch {
+    return false;
+  }
+}
+
 export function assertAllowedOrigin(req: IncomingMessage): void {
   const origin = req.headers.origin;
   if (origin === undefined) return;
   const allowed = appOrigin();
   if (allowed !== null && origin === allowed) return;
+  if (isSameOrigin(req)) return;
   throw new HttpError(403, 'BAD_ORIGIN', 'Cross-origin request refused');
 }
