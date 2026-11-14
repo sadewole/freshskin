@@ -22,16 +22,27 @@
 
 ## 3. Phases
 
-### Phase 0 — Design tokens & foundations
+### Phase 0 — Design tokens & foundations ✅ DONE
 Extract the mockup's values into a real theme. No view logic changes.
+- `packages/ui/tokens.css` created (`:root` custom properties: color, type scale, radii, shadows, spacing) sourced from the mockup; fonts wired; dark theme derived (deep plum-brown bg, cream ink). Note: post-restructure paths are `apps/web/…` + `packages/ui/…`, not `web/…` as originally written.
+- **Open item (web lane):** Google Fonts `<link>` in `apps/web/index.html` violates the shipped `style-src 'self'` CSP — must self-host woff2.
+- **Acceptance:** every color/font/radius used in the app resolves to a token; no hardcoded hex outside `tokens.css` (enforced by `pnpm lint:tokens`); Light + dark render without contrast regressions (spot-check body text ≥ 4.5:1).
 - Create `web/src/styles/tokens.css` (`:root` custom properties: color, type scale, radii, shadows, spacing) sourced 1:1 from the mockup's `<helmet>` + inline styles.
 - Add Fraunces + DM Sans via `web/index.html` (Google Fonts link, `display=swap`, system fallbacks).
 - Decide dark mode: current app supports `prefers-color-scheme`; mockup is light-only. Decision: keep a dark theme derived from tokens (deep plum-brown bg, cream ink) rather than dropping it — record values in tokens.css.
 - Split `styles.css` → `tokens.css` + `base.css` + per-view files only if it passes ~400 lines; otherwise keep one file (existing convention).
 - **Acceptance:** every color/font/radius used in the app resolves to a token; no hardcoded hex outside `tokens.css`; Light + dark render without contrast regressions (spot-check body text ≥ 4.5:1).
 
-### Phase 1 — App reskin (highest visible payoff, no backend changes)
+### Phase 1 — App reskin ✅ DONE (commits 697cf0c, 70f1d90, c610b7e)
 Apply the brand to existing screens, markup order only.
+- Shell: cream background, serif wordmark, bottom tab bar on mobile, sticky top bar on desktop. Tabs use `lucide-react` icons (`Home, ScanLine, Heart, User`) with accent text + pill marker; active mobile tab gets tinted surface.
+- Home/recommendations: product cards with image slot + placeholder treatment, score as berry pill/badge, flags as soft chips, reason copy primary, "How this was calculated" in `<details>`; safety-excluded list calm, never alarming.
+- Scent quiz: stepped flow (like → avoid → strength) with chip groups in berry active state, slide transitions.
+- Scan result: verdict card (28px radius, tinted per verdict), match-rate progress bar, findings list; sticky scan CTA above tab bar on phones; text-paste path unchanged.
+- Saved/Profile/ConsentGate: card-ified lists, consent ledger as readable rows, gate's derived-from-session behavior untouched.
+- Loading/empty/error (`ui/Async.tsx`): spinner, skeleton cards (no layout shift), `Empty` with lucide `Sparkles`, consistent error note. No hand-rolled glyphs remain (only prose punctuation + ₦).
+- Pulled forward from Phase 5: `motion` view-enter/quiz-slide/verdict-reveal (150/250ms ease-out, `prefers-reduced-motion` via `MotionConfig`), ≥44px touch targets, 16px input floor (iOS zoom-trap fix), 360px no-scroll, manifest splash/theme in brand colors, `optimizeDeps` pre-bundle for `lucide-react` + `motion/react`.
+- **Acceptance:** all routes render in the new theme; no API/type/state changes (styles + JSX order + icon/motion deps only); keyboard + screen-reader behavior unchanged or better; 400px-wide layout has no horizontal scroll. Verified: `typecheck` + `lint:tokens` + `web:build` clean.
 - Shell (`App.tsx` + styles): cream background, serif wordmark, bottom tab bar on mobile viewports (PWA pattern) instead of top pills; keep sticky top bar on desktop.
 - Home/recommendations (`HomeView.tsx`, `ProductCard.tsx`): product cards with image slot + placeholder treatment, score as berry pill/badge, flags as soft chips, reason copy as primary text, "How this was calculated" stays in `<details>`; safety-excluded list keeps its honest, calm styling (never alarming).
 - Scent quiz (`ScentQuiz.tsx`): two-step feel (like → avoid → strength) within the same component state; chip groups in berry active state.
