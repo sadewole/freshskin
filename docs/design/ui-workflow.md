@@ -51,8 +51,22 @@ Apply the brand to existing screens, markup order only.
 - Loading/empty/error (`ui/Async.tsx`): skeleton cards for lists, illustrated empty states (CSS/placeholder, not competitor art), consistent error note.
 - **Acceptance:** all five routes render in the new theme; no API/type/state changes in the diff (reviewable as styles + JSX order only); keyboard + screen-reader behavior unchanged or better; 400px-wide layout has no horizontal scroll.
 
-### Phase 2 — Scan upgrade (camera + result experience)
-Per PRD §15.3 TA-5/TA-7; first functional (not visual) change.
+### Phase 2 — Scan upgrade (camera + result experience) · WEB SLICE DONE
+Per PRD §15.3 TA-5/TA-7; first functional (not visual) change. Web lane only — the API has no
+upload endpoint and no OCR worker yet, so the web slice deliberately stops at the phone.
+- `apps/web/src/scan/capture.ts` (new): client photo pipeline — `getUserMedia` frame or gallery
+  file → downscale to PRD §12.4's 1600px long-edge JPEG (strips EXIF) → on-device half of the
+  §13.2 quality gate (size / exposure / glare / blur via Laplacian variance) with the specific
+  retake copy §13.2 demands. CSP `img-src 'self' data:` is why the preview is a data: URL.
+- `apps/web/src/scan/LabelCapture.tsx` (new): live camera with framing-guide overlay + gallery
+  fallback (AC-1.4), secure-context/camera-denied/no-camera states each with honest copy,
+  review-and-retake before anything is submitted. Stream stops on unmount and on capture.
+- `ScanView.tsx`: Photo/Paste segmented mode (Photo default); photo path registers the scan via
+  `POST /scans` (same lifecycle the worker will pick up) and shows an honest "waiting for the
+  reading pipeline — nothing was uploaded" queued card. Text path unchanged (still the working
+  matcher). Verdict rendering untouched.
+- API-side still open: upload/signed-URL endpoint (§12.4), OCR worker (§13.4), scan polling
+  (`GET /scans/:id` exists) — then this screen wires the photo bytes to the queued scan.
 - `getUserMedia` capture with file-upload fallback + permission explainer copy.
 - Client-side resize/compress before upload (per TA-7), retry on failure.
 - Connect to the real photo pipeline when available; keep the text path as fallback. Preserve the `queued` state for worker-offline.

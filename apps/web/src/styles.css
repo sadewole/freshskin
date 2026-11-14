@@ -698,6 +698,15 @@ dd {
 
 /* ---------------------------------------------------------------- scan */
 
+.scan-mode {
+  margin-bottom: var(--gap);
+}
+/* Segmented buttons carry icons next to labels. */
+.seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
 .scan-input textarea {
   margin-bottom: 0.75rem;
 }
@@ -816,4 +825,47 @@ dd {
 }
 .retake {
   margin: 0.75rem 0 0;
+}
+
+/* ---------------------------------------------------------------- capture */
+
+/* Live preview fills the card; the guide overlay marks where the label should sit. */
+.capture-frame {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--ink);
+  aspect-ratio: 4 / 3;
+}
+.capture-frame video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.capture-guide {
+  position: absolute;
+  inset: 12%;
+  border: 2px dashed var(--cream-2);
+  border-radius: var(--radius);
+  opacity: 0.8;
+  pointer-events: none;
+}
+.capture-preview img {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius);
+}
+.capture-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+.capture-actions .primary {
+  flex: 1;
+  min-width: 10rem;
+}
+.scan-capture .error {
+  margin-bottom: 0;
 }
