@@ -3,11 +3,14 @@ import { Droplets, Flower2, Heart, ScanLine, ShieldCheck, Sparkles } from 'lucid
 import { getCreams, getPerfumes, getSimilar } from '../api/client';
 import type { ProductKind, SimilarResponse } from '../api/types';
 import { useAsync } from '../data/useAsync';
+import { ROUTINE_FIXTURE } from '../data/routine-fixture';
 import { navigate, useDocumentTitle } from '../router';
 import { useSession } from '../session/SessionProvider';
 import { ErrorNote, Empty, SkeletonList } from '../ui/Async';
 import { ProductCard } from './ProductCard';
+import { RoutineCard } from './RoutineCard';
 import { ScentQuiz } from './ScentQuiz';
+import { TipsStrip } from './TipsStrip';
 
 type Pane =
   | { readonly kind: 'results' }
@@ -26,6 +29,9 @@ const QUICK_ACTIONS = [
  * Layout borrows the reference patterns (hero CTA + action grid + curated picks) without
  * their commerce chrome: no cart, no deals carousel, no category shop. Every section maps
  * to a PRD element: hero → "scan a product", grid → creams/perfumes/saved, list → results.
+ * Phase 1 serves the routine + tips from a reviewed local fixture (`data/routine-fixture.ts`,
+ * mirrored from the frozen 0014 seed); Phase 3 swaps the source to `GET /routine` and deletes
+ * the fixture — the sections below keep their markup.
  */
 export function HomeView() {
   const { me } = useSession();
@@ -141,6 +147,9 @@ export function HomeView() {
           onCancel={() => setQuizOpen(false)}
         />
       )}
+
+      <RoutineCard routine={ROUTINE_FIXTURE.data} />
+      <TipsStrip tips={ROUTINE_FIXTURE.data.tips} />
 
       <div className="section-head">
         <div>

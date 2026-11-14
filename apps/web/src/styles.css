@@ -986,6 +986,107 @@ dd {
 .section-head .segmented {
   flex: none;
 }
+
+/* ---------------------------------------------------------------- routine + tips (S7) */
+
+.home-section {
+  margin: calc(var(--gap) * 1.25) 0 var(--gap);
+}
+.routine-steps {
+  list-style: none;
+  margin: 0 0 var(--gap);
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+.routine-step-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.routine-step-head h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.routine-step p {
+  margin: 0.5rem 0 0;
+  line-height: 1.55;
+}
+.routine-num {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--accent-ink);
+  background: var(--accent);
+}
+.step-why {
+  margin-top: 0.35rem;
+}
+.why-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+.why-list strong {
+  color: var(--ink);
+}
+.checkin-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--accent);
+}
+.checkin-head h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--ink);
+}
+.checkin .chips {
+  margin: 0.5rem 0;
+}
+.checkin .primary {
+  margin-top: 0.25rem;
+}
+.checkin-history {
+  margin: 0.75rem 0 0;
+}
+.sync-note {
+  margin: 0.5rem 0 0;
+  font-style: italic;
+}
+.tips-strip {
+  display: grid;
+  gap: 0.6rem;
+}
+.tip-mark {
+  margin: 0 0 0.35rem;
+  color: var(--accent);
+  display: flex;
+}
+.tip p {
+  margin: 0.35rem 0 0;
+}
+.tip p:first-of-type {
+  margin-top: 0;
+  line-height: 1.55;
+}
+@media (min-width: 40rem) {
+  .routine-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .tips-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .filter-row {
   margin-bottom: 0.75rem;
 }
