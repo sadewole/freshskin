@@ -39,6 +39,9 @@ const dismissReasons = [
 
 const strengths = ['light', 'moderate', 'strong', 'very_strong'] as const satisfies readonly StrengthPreference[];
 
+const checkInCompletions = ['skipped', 'partly', 'done'] as const;
+const skinFeels = ['drier', 'about_same', 'more_comfortable', 'not_sure'] as const;
+
 const captureSchema = z
   .object({
     brightness: z.coerce.number().optional(),
@@ -106,6 +109,12 @@ export const completeScanBodySchema = z.object({
 export const completeAnalysisBodySchema = z.object({
   analysis: z.unknown(),
   capture: captureSchema,
+});
+
+export const checkInBodySchema = z.object({
+  completion: z.enum(checkInCompletions),
+  feel: z.enum(skinFeels).nullable().optional(),
+  checked_on: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
 export function parseBody<S extends ZodTypeAny>(schema: S, value: unknown): z.infer<S> {

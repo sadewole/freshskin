@@ -88,4 +88,21 @@ describe('module boundaries', () => {
       assert.equal(reachesSystem, false, `${name} must not import ${SYSTEM_MODULE}`);
     }
   });
+
+  it('the routine module never imports the recommendation pipeline', async () => {
+    const routineDir = resolve(ROOT, 'apps/api/src/routine');
+    const present = resolve(ROOT, 'apps/api/src/http/present-routine.ts');
+    const files = [...(await sourceFiles(routineDir)), present];
+    assert.ok(files.length > 0, 'expected routine sources to exist');
+    for (const file of files) {
+      const source = await readFile(file, 'utf8');
+      const reachesRec = specifiers(source).some((specifier) => {
+        if (!specifier.startsWith('.') && !specifier.startsWith('@freshskin/')) return false;
+        if (specifier === '@freshskin/contracts') return false;
+        const target = resolveImport(file, specifier);
+        return target !== null && normalise(target).startsWith('apps/api/src/rec/');
+      });
+      assert.equal(reachesRec, false, `${normalise(file)} must not import from rec/`);
+    }
+  });
 });

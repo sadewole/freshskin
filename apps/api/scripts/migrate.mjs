@@ -1,4 +1,4 @@
-// Applies db/migrations/*.sql in filename order, once each, in a transaction.
+// Applies apps/api/db/migrations/*.sql in filename order, once each, in a transaction.
 // Hand-written SQL is the source of truth; this runner is deliberately dumb.
 import { readdir, readFile } from 'node:fs/promises';
 import { join, dirname } from 'node:path';
@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
-const dir = join(root, 'db', 'migrations');
+const dir = join(root, 'apps', 'api', 'db', 'migrations');
 const url = process.env.DATABASE_URL;
 if (!url) {
   console.error('DATABASE_URL is required');

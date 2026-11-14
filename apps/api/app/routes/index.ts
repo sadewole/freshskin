@@ -3,6 +3,7 @@ import { catalogRoutes } from './catalog.js';
 import { consentRoutes } from './consent.js';
 import { fragranceProfileRoutes } from './fragrance-profile.js';
 import { recommendationRoutes } from './recommendations.js';
+import { routineRoutes } from './routine.js';
 import { savedRoutes } from './saved.js';
 import { scanRoutes } from './scans.js';
 import { skinRoutes } from './skin.js';
@@ -13,6 +14,7 @@ export const routes: readonly Route[] = [
   ...consentRoutes,
   ...fragranceProfileRoutes,
   ...recommendationRoutes,
+  ...routineRoutes,
   ...savedRoutes,
   ...scanRoutes,
   ...skinRoutes,

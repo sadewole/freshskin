@@ -78,12 +78,12 @@ const ROUTINE_COPY =
 const ROUTINE_TIP_BODIES =
   'A short routine you repeat suits body skin better than a long one you skip. Apply perfume after moisturiser so it settles on skin that is already conditioned. SPF counts on arms and legs too, not only on skin you would call facial.';
 
-// Compile-time guard: every fixture string stays within the 140-char wire limit and the
-// copy deck stays free of banned words (PRD §5.3–5.4, §9.1).
+// Compile-time guard: every step/tip string stays within the 140-char wire limit and the
+// copy deck stays free of banned words (PRD §5.3–5.4, §9.1). The disclaimer is canonical
+// PRD §16.7 copy and exempt from the ≤140 content rule.
 const _lengthCheck: readonly string[] = [
   ...ROUTINE_FIXTURE.data.routine.steps.flatMap((step) => [step.instruction, step.why]),
   ...ROUTINE_FIXTURE.data.tips.flatMap((tip) => [tip.body, tip.why]),
-  ROUTINE_FIXTURE.data.disclaimer,
 ];
 for (const text of _lengthCheck) {
   if (text.length > 140) throw new Error(`Routine fixture string exceeds 140 chars: ${text.slice(0, 40)}`);
