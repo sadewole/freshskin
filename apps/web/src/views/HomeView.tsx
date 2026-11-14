@@ -1,11 +1,11 @@
 import { useCallback, useState, type ReactNode } from 'react';
-import { Flower2, ShieldCheck } from 'lucide-react';
+import { Droplets, Flower2, Heart, ScanLine, ShieldCheck, Sparkles } from 'lucide-react';
 import { getCreams, getPerfumes, getSimilar } from '../api/client';
 import type { ProductKind, SimilarResponse } from '../api/types';
 import { useAsync } from '../data/useAsync';
-import { useDocumentTitle } from '../router';
+import { navigate, useDocumentTitle } from '../router';
 import { useSession } from '../session/SessionProvider';
-import { ErrorNote, Empty, SkeletonList, price } from '../ui/Async';
+import { ErrorNote, Empty, SkeletonList } from '../ui/Async';
 import { ProductCard } from './ProductCard';
 import { ScentQuiz } from './ScentQuiz';
 
@@ -13,12 +13,19 @@ type Pane =
   | { readonly kind: 'results' }
   | { readonly kind: 'similar'; readonly productId: string };
 
+const QUICK_ACTIONS = [
+  { kind: 'scan', label: 'Scan a label', hint: 'Photo or paste', Icon: ScanLine },
+  { kind: 'cream', label: 'My creams', hint: 'For your skin', Icon: Droplets },
+  { kind: 'perfume', label: 'My perfumes', hint: 'For your taste', Icon: Flower2 },
+  { kind: 'saved', label: 'Saved', hint: 'Wishlist + owned', Icon: Heart },
+] as const;
+
 /**
- * Home: the recommendation list, the kind toggle, the price filter, and the scent quiz.
+ * Home (PRD S7): orient returning users — profile summary, next actions, recent results.
  *
- * State that used to be scattered — `state.kind`, `state.maxPrice`, plus whatever `#quiz`
- * was hidden to — is now explicit component state. `pane` replaces the old trick of
- * rewriting `#results` with a totally different screen for "similar scents".
+ * Layout borrows the reference patterns (hero CTA + action grid + curated picks) without
+ * their commerce chrome: no cart, no deals carousel, no category shop. Every section maps
+ * to a PRD element: hero → "scan a product", grid → creams/perfumes/saved, list → results.
  */
 export function HomeView() {
   const { me } = useSession();
@@ -59,19 +66,87 @@ export function HomeView() {
 
   const quizNeeded = productKind === 'perfume' && me?.has_fragrance_profile !== true;
 
+  const runQuickAction = (kind: (typeof QUICK_ACTIONS)[number]['kind']) => {
+    if (kind === 'scan') {
+      navigate('scan');
+      return;
+    }
+    if (kind === 'saved') {
+      navigate('saved');
+      return;
+    }
+    switchKind(kind);
+  };
+
   return (
     <section aria-labelledby="home-title">
-      <div className="hero">
-        <p className="kicker">For you</p>
-        <h2 id="home-title">
-          {productKind === 'cream' ? 'Creams that fit your skin.' : 'Scents that fit your taste.'}
-        </h2>
-        <p className="muted small">
-          Every pick shows why it was chosen — and what it costs in Lagos.
+      <div className="home-hero">
+        <p className="kicker">FreshSkin · Lagos</p>
+        <h2 id="home-title">Know what is inside.</h2>
+        <p className="muted">
+          Scan any ingredient label, or get creams and scents that fit you. Every pick shows
+          why it was chosen and what it costs.
         </p>
+        <div className="home-hero-cta">
+          <button className="primary with-icon" onClick={() => navigate('scan')}>
+            <ScanLine size={16} aria-hidden="true" />
+            Scan a product
+          </button>
+          {quizNeeded ? (
+            <button className="ghost" onClick={() => setQuizOpen(true)}>
+              Take the scent quiz
+            </button>
+          ) : (
+            <button className="ghost" onClick={() => switchKind(productKind === 'cream' ? 'perfume' : 'cream')}>
+              {productKind === 'cream' ? 'Browse scents' : 'Browse creams'}
+            </button>
+          )}
+        </div>
+        <ul className="trust-row" aria-label="Why FreshSkin">
+          <li>
+            <ShieldCheck size={14} aria-hidden="true" /> Safety first
+          </li>
+          <li>
+            <Sparkles size={14} aria-hidden="true" /> Every score explained
+          </li>
+        </ul>
       </div>
 
-      <div className="row">
+      <nav className="quick-grid" aria-label="Start with">
+        {QUICK_ACTIONS.map(({ kind, label, hint, Icon }) => (
+          <button
+            key={kind}
+            type="button"
+            className="quick-card"
+            aria-pressed={kind === productKind}
+            onClick={() => runQuickAction(kind)}
+          >
+            <span className="quick-icon" aria-hidden="true">
+              <Icon size={20} aria-hidden="true" />
+            </span>
+            <span className="quick-text">
+              <strong>{label}</strong>
+              <span className="muted small">{hint}</span>
+            </span>
+          </button>
+        ))}
+      </nav>
+
+      {quizOpen && (
+        <ScentQuiz
+          onSaved={() => {
+            setQuizOpen(false);
+            recommendations.reload();
+          }}
+          onCancel={() => setQuizOpen(false)}
+        />
+      )}
+
+      <div className="section-head">
+        <div>
+          <p className="kicker">Curated for you</p>
+          <h2>{productKind === 'cream' ? 'Creams that fit your skin' : 'Scents that fit your taste'}</h2>
+        </div>
         <div className="segmented" role="group" aria-label="Product kind">
           <button className="seg" aria-pressed={productKind === 'cream'} onClick={() => switchKind('cream')}>
             Creams
@@ -84,6 +159,9 @@ export function HomeView() {
             Perfumes
           </button>
         </div>
+      </div>
+
+      <div className="row filter-row">
         <label className="filter">
           Max price ₦
           <input
@@ -101,16 +179,6 @@ export function HomeView() {
           />
         </label>
       </div>
-
-      {quizOpen && (
-        <ScentQuiz
-          onSaved={() => {
-            setQuizOpen(false);
-            recommendations.reload();
-          }}
-          onCancel={() => setQuizOpen(false)}
-        />
-      )}
 
       <div aria-live="polite">
         {pane.kind === 'similar' ? (
@@ -228,7 +296,7 @@ function SimilarPane({ result, loading, error, children }: SimilarPaneProps) {
             <div className="product-head">
               <h3>{entry.name}</h3>
               <p className="muted small product-meta">
-                {entry.label.replace(/_/g, ' ')} · {price(entry.price_ngn)}
+                {entry.label.replace(/_/g, ' ')} · {entry.price_ngn === null ? '—' : `₦${entry.price_ngn.toLocaleString('en-NG')}`}
               </p>
             </div>
           </div>
