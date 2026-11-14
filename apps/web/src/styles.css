@@ -24,6 +24,17 @@ body {
   color: var(--ink);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  /* Native-app tap feel: no grey flash, no double-tap zoom delay, no text
+   * selection when a thumb lands slightly off a control. */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  overscroll-behavior-y: none;
+}
+button,
+.tab,
+.chip {
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .skip {
@@ -244,13 +255,18 @@ summary .lucide {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 0.15rem;
+  /* Thumb-native hit area: 44px minimum on every target, bar included. */
+  min-height: 44px;
+  min-width: 44px;
   padding: 0.6rem 0.4rem;
   text-align: center;
   text-decoration: none;
   color: var(--muted);
   border-radius: calc(var(--radius) - 4px);
   font-size: 0.9rem;
+  position: relative;
   transition:
     background-color var(--dur-fast) var(--ease-out),
     color var(--dur-fast) var(--ease-out),
@@ -260,7 +276,7 @@ summary .lucide {
   transform: scale(0.96);
 }
 .tab-icon {
-  font-size: 1.1rem;
+  flex: none;
   line-height: 1;
 }
 .tab-label {
@@ -269,8 +285,18 @@ summary .lucide {
   letter-spacing: 0.02em;
 }
 .tab[aria-current='page'] {
+  color: var(--accent);
+}
+/* Active-tab marker: a pill dot behind the label, not color alone — the bar keeps
+ * its surface so the icons stay scannable at a glance. */
+.tab[aria-current='page']::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  width: 1.25rem;
+  height: 3px;
+  border-radius: 999px;
   background: var(--accent);
-  color: var(--accent-ink);
 }
 
 /* PWA pattern: bottom tab bar on small screens, sticky top bar on desktop. */
@@ -289,10 +315,20 @@ summary .lucide {
     -webkit-backdrop-filter: blur(12px);
   }
   .tab {
-    padding: 0.45rem 0.4rem;
+    /* Thumb row: roomy tap rows with the marker tucked under the label. */
+    min-height: 52px;
+    padding: 0.45rem 0.4rem 0.55rem;
+    border-radius: 12px;
+  }
+  .tab[aria-current='page'] {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+  .tab[aria-current='page']::after {
+    bottom: 4px;
   }
   main {
-    padding-bottom: 6rem;
+    /* Clearance for the fixed bar plus the sticky scan CTA, whichever is present. */
+    padding-bottom: 7rem;
   }
 }
 
@@ -318,6 +354,23 @@ summary .lucide {
   gap: 0.75rem;
   align-items: center;
   margin-bottom: var(--gap);
+}
+/* Phone sections stack: the kind toggle goes full-width above the price filter,
+ * so neither cramps at 360px and both stay thumb-reachable. */
+@media (max-width: 40rem) {
+  .row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .segmented {
+    display: flex;
+  }
+  .segmented .seg {
+    flex: 1;
+  }
+  .filter {
+    justify-content: space-between;
+  }
 }
 
 .card-head {
@@ -457,6 +510,12 @@ button {
   padding: 0.55rem 1rem;
   background: var(--surface);
   color: var(--ink);
+  /* Every button is a thumb target first: 44px minimum even for `.small`. */
+  min-height: 44px;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+button:active:not(:disabled) {
+  transform: scale(0.97);
 }
 button:disabled {
   opacity: 0.6;
@@ -486,6 +545,8 @@ button.small {
   border: 0;
   background: transparent;
   padding: 0.4rem 0.9rem;
+  /* Segmented options participate in the same 44px thumb rule. */
+  min-height: 44px;
 }
 .seg[aria-pressed='true'] {
   background: var(--accent);
@@ -501,6 +562,8 @@ button.small {
   border-radius: 999px;
   padding: 0.45rem 0.9rem;
   font-size: 0.85rem;
+  /* Chips are multi-select thumbs: keep them tappable without fat-fingering. */
+  min-height: 44px;
   background: transparent;
   transition:
     background-color var(--dur-fast) var(--ease-out),
@@ -590,6 +653,11 @@ textarea {
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 0.5rem 0.65rem;
+  /* iOS zooms the whole page when a sub-16px field focuses — the single biggest
+   * "this is a website, not an app" tell. Fields stay at body size minimum. */
+  font-size: 1rem;
+  /* Thumb-reachable fields: comfortable tap height without looking chunky. */
+  min-height: 44px;
 }
 textarea {
   width: 100%;
@@ -615,6 +683,10 @@ details summary {
   cursor: pointer;
   color: var(--muted);
   font-size: 0.875rem;
+  /* The breakdown disclosure is a thumb target too. */
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 
 dl {
@@ -631,6 +703,16 @@ dd {
 }
 .scan-input .primary {
   width: 100%;
+}
+/* Thumb-reach: on phones the scan CTA sticks above the tab bar so a paste-and-go
+ * never requires scrolling past the keyboard. Desktop keeps it in flow. */
+@media (max-width: 40rem) {
+  .scan-input .primary {
+    position: sticky;
+    bottom: calc(4.5rem + env(safe-area-inset-bottom));
+    z-index: 10;
+    box-shadow: var(--shadow-pop);
+  }
 }
 
 /* ---------------------------------------------------------------- verdicts */
