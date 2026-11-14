@@ -32,6 +32,13 @@
   --radius-pill: 999px;
   --gap: 1rem;
 
+  /* ---- motion (B2C bar: 150–250ms ease-out, one meaning per transition) ---- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 150ms;
+  --dur-med: 250ms;
+  --shadow-card: 0 1px 2px rgb(46 27 20 / 0.06), 0 8px 24px -12px rgb(46 27 20 / 0.18);
+  --shadow-pop: 0 2px 6px rgb(46 27 20 / 0.1), 0 16px 40px -16px rgb(166 43 82 / 0.35);
+
   /* ---- semantic aliases: light theme (mockup ground) ---- */
   color-scheme: light dark;
   --bg: var(--cream);
@@ -60,5 +67,15 @@
     --good: #86d99b;
     --okay: #e5b85c;
     --avoid: #f08a8a;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.5);
+    --shadow-pop: 0 2px 6px rgb(0 0 0 / 0.4), 0 16px 40px -16px rgb(222 139 166 / 0.3);
+  }
+}
+
+/* Motion off means off: every transition/animation below is gated on this. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-med: 0ms;
   }
 }

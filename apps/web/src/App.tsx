@@ -1,4 +1,7 @@
+import { Heart, Home, ScanLine, User } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { Link, useRoute, type Route } from './router';
+import { viewEnter } from './ui/motion';
 import { useSession } from './session/SessionProvider';
 import { ErrorNote, Loading } from './ui/Async';
 import { ConsentGate } from './views/ConsentGate';
@@ -7,11 +10,11 @@ import { ProfileView } from './views/ProfileView';
 import { SavedView } from './views/SavedView';
 import { ScanView } from './views/ScanView';
 
-const TABS: readonly { readonly route: Route; readonly label: string }[] = [
-  { route: 'home', label: 'Home' },
-  { route: 'scan', label: 'Scan' },
-  { route: 'saved', label: 'Saved' },
-  { route: 'profile', label: 'Profile' },
+const TABS: readonly { readonly route: Route; readonly label: string; readonly Icon: typeof Home }[] = [
+  { route: 'home', label: 'Home', Icon: Home },
+  { route: 'scan', label: 'Scan', Icon: ScanLine },
+  { route: 'saved', label: 'Saved', Icon: Heart },
+  { route: 'profile', label: 'Profile', Icon: User },
 ];
 
 /**
@@ -42,22 +45,41 @@ export function App() {
   return (
     <>
       <nav className="tabs" aria-label="Sections">
-        {TABS.map((tab) => (
+        {TABS.map(({ route: tabRoute, label, Icon }) => (
           <Link
-            key={tab.route}
-            to={tab.route}
+            key={tabRoute}
+            to={tabRoute}
             className="tab"
-            aria-current={route === tab.route ? 'page' : undefined}
+            aria-current={route === tabRoute ? 'page' : undefined}
           >
-            {tab.label}
+            <Icon className="tab-icon" size={20} aria-hidden="true" />
+            <span className="tab-label">{label}</span>
           </Link>
         ))}
       </nav>
 
-      {route === 'home' && <HomeView />}
-      {route === 'scan' && <ScanView />}
-      {route === 'saved' && <SavedView />}
-      {route === 'profile' && <ProfileView />}
+      <AnimatePresence mode="wait" initial={false}>
+      {route === 'home' && (
+        <motion.div key="home" {...viewEnter}>
+          <HomeView />
+        </motion.div>
+      )}
+      {route === 'scan' && (
+        <motion.div key="scan" {...viewEnter}>
+          <ScanView />
+        </motion.div>
+      )}
+      {route === 'saved' && (
+        <motion.div key="saved" {...viewEnter}>
+          <SavedView />
+        </motion.div>
+      )}
+      {route === 'profile' && (
+        <motion.div key="profile" {...viewEnter}>
+          <ProfileView />
+        </motion.div>
+      )}
+      </AnimatePresence>
     </>
   );
 }

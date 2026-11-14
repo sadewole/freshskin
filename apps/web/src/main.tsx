@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { MotionConfig } from 'motion/react';
 import { registerSW } from 'virtual:pwa-register';
 import { App } from './App';
 import { SessionProvider } from './session/SessionProvider';
@@ -10,9 +11,15 @@ if (container === null) throw new Error('#root is missing from index.html');
 
 createRoot(container).render(
   <StrictMode>
-    <SessionProvider>
-      <App />
-    </SessionProvider>
+    {/*
+      reducedMotion="user" disables Motion transforms under
+      prefers-reduced-motion, matching the CSS gate in tokens.css.
+    */}
+    <MotionConfig reducedMotion="user">
+      <SessionProvider>
+        <App />
+      </SessionProvider>
+    </MotionConfig>
   </StrictMode>,
 );
 

@@ -35,6 +35,10 @@ Auth/CORS settled in decision 0002: host-only cookie on the api origin,
 - **Keep the pipeline's safety shape** — `apps/api/src/rec/`: four branded stages,
   single `safety/conflicts.ts` detector, registries (not formula functions). New terms/rules
   are data hunks, never branches.
+- **Libraries, not hand-rolled design primitives** — icons are `lucide-react`; view/quiz
+  transitions are `motion` (shared language in `apps/web/src/ui/motion.ts`, timing mirrors
+  the tokens). Never hand-roll glyphs, keyframed entrances, or carousels; fix at the library
+  version, not with local CSS.
 - **Verify the way this repo verifies** — root: `pnpm typecheck`, `pnpm build`,
   `pnpm test` (191 tests; DB tests need `pnpm db:reset`); web: `pnpm --filter @freshskin/web typecheck`.
   Pre-commit: full typecheck + build + `pnpm test` green, working tree clean otherwise.

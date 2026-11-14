@@ -18,41 +18,62 @@ export function ProfileView() {
 
   return (
     <section aria-labelledby="profile-title">
-      <h2 id="profile-title">Profile</h2>
-      <p className="muted small">Session {me.user_id}</p>
+      <div className="hero">
+        <p className="kicker">Your space</p>
+        <h2 id="profile-title">Profile</h2>
+        <p className="muted small">Anonymous session · {me.user_id.slice(0, 8)}…</p>
+      </div>
 
-      <h3>Scent quiz</h3>
-      {quiz.loading && <Loading />}
-      {quiz.error !== null && <ErrorNote error={quiz.error} />}
-      {quiz.data?.data == null ? (
-        <p className="muted">{me.has_fragrance_profile ? 'Saved.' : 'Not taken yet.'}</p>
-      ) : (
-        <dl>
-          <dt className="muted small">Likes</dt>
-          <dd>{quiz.data.data.families_liked.join(', ') || '—'}</dd>
-          <dt className="muted small">Avoids</dt>
-          <dd>{quiz.data.data.families_disliked.join(', ') || '—'}</dd>
-          <dt className="muted small">Strength</dt>
-          <dd>{quiz.data.data.strength.replace(/_/g, ' ')}</dd>
-        </dl>
-      )}
+      <div className="card">
+        <h3>Scent quiz</h3>
+        {quiz.loading && <Loading />}
+        {quiz.error !== null && <ErrorNote error={quiz.error} />}
+        {quiz.data?.data == null ? (
+          <p className="muted">{me.has_fragrance_profile ? 'Saved.' : 'Not taken yet.'}</p>
+        ) : (
+          <dl className="quiz-summary">
+            <div>
+              <dt>Loves</dt>
+              <dd>{quiz.data.data.families_liked.join(', ') || '—'}</dd>
+            </div>
+            <div>
+              <dt>Avoids</dt>
+              <dd>{quiz.data.data.families_disliked.join(', ') || '—'}</dd>
+            </div>
+            <div>
+              <dt>Strength</dt>
+              <dd className="capitalize">{quiz.data.data.strength.replace(/_/g, ' ')}</dd>
+            </div>
+          </dl>
+        )}
+      </div>
 
-      <h3>Permissions</h3>
-      {consentEntries.map(([kind, granted]) => (
-        <label className="check" key={kind}>
-          <input
-            type="checkbox"
-            checked={granted}
-            onChange={(event) => {
-              setError(null);
-              // Session state updates on success, which re-renders the checkbox. On failure
-              // the box snaps back to the ledger value; showing the error is the feedback.
-              void grant(kind, event.target.checked).catch(setError);
-            }}
-          />
-          <span>{kind.replace(/_/g, ' ')}</span>
-        </label>
-      ))}
+      <div className="card">
+        <h3>Permissions</h3>
+        <p className="muted small card-sub">
+          You choose what we may process, and you can change this at any time.
+        </p>
+        {consentEntries.map(([kind, granted]) => (
+          <label className="consent-row" key={kind}>
+            <span className="consent-label">{kind.replace(/_/g, ' ')}</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={granted}
+              aria-label={`${kind.replace(/_/g, ' ')} consent`}
+              className={`switch${granted ? ' on' : ''}`}
+              onClick={() => {
+                setError(null);
+                // Session state updates on success, which re-renders the switch. On failure
+                // it snaps back to the ledger value; showing the error is the feedback.
+                void grant(kind, !granted).catch(setError);
+              }}
+            >
+              <span className="switch-knob" aria-hidden="true" />
+            </button>
+          </label>
+        ))}
+      </div>
 
       {error !== null && <ErrorNote error={error} />}
 

@@ -1,10 +1,11 @@
 import { useCallback, useState, type ReactNode } from 'react';
+import { Flower2, ShieldCheck } from 'lucide-react';
 import { getCreams, getPerfumes, getSimilar } from '../api/client';
 import type { ProductKind, SimilarResponse } from '../api/types';
 import { useAsync } from '../data/useAsync';
 import { useDocumentTitle } from '../router';
 import { useSession } from '../session/SessionProvider';
-import { ErrorNote, Empty, Loading, price } from '../ui/Async';
+import { ErrorNote, Empty, SkeletonList, price } from '../ui/Async';
 import { ProductCard } from './ProductCard';
 import { ScentQuiz } from './ScentQuiz';
 
@@ -60,9 +61,15 @@ export function HomeView() {
 
   return (
     <section aria-labelledby="home-title">
-      <h2 id="home-title" className="visually-hidden">
-        Recommendations
-      </h2>
+      <div className="hero">
+        <p className="kicker">For you</p>
+        <h2 id="home-title">
+          {productKind === 'cream' ? 'Creams that fit your skin.' : 'Scents that fit your taste.'}
+        </h2>
+        <p className="muted small">
+          Every pick shows why it was chosen — and what it costs in Lagos.
+        </p>
+      </div>
 
       <div className="row">
         <div className="segmented" role="group" aria-label="Product kind">
@@ -147,7 +154,7 @@ function RecommendationPane({
   showQuizPrompt,
   onOpenQuiz,
 }: RecommendationPaneProps) {
-  if (loading) return <Loading />;
+  if (loading) return <SkeletonList />;
   if (error !== null) return <ErrorNote error={error} />;
   if (data === null) return null;
 
@@ -156,7 +163,9 @@ function RecommendationPane({
   return (
     <>
       {items.length === 0 ? (
-        <Empty>Nothing matched those filters. Try raising the price.</Empty>
+        <Empty title="No matches yet">
+          Nothing matched those filters. Try raising the price.
+        </Empty>
       ) : (
         items.map((item) => (
           <ProductCard key={item.recommendation_id} item={item} kind={productKind} onShowSimilar={onShowSimilar} />
@@ -164,8 +173,10 @@ function RecommendationPane({
       )}
 
       {excluded.length > 0 && (
-        <details className="panel">
-          <summary>Hidden for your safety ({excluded.length})</summary>
+        <details className="panel excluded">
+          <summary>
+            <ShieldCheck size={14} aria-hidden="true" /> Hidden for your safety ({excluded.length})
+          </summary>
           {excluded.map((entry) => (
             <p className="muted small" key={entry.product_id}>
               {entry.name}: {entry.reason}
@@ -175,9 +186,15 @@ function RecommendationPane({
       )}
 
       {showQuizPrompt && (
-        <button className="ghost small" onClick={onOpenQuiz}>
-          Not seeing what you like? Answer the scent quiz
-        </button>
+        <div className="card quiz-nudge">
+          <h3>Make it personal</h3>
+          <p className="muted small">
+            A 30-second quiz tunes perfume picks to the families you love.
+          </p>
+          <button className="primary small" onClick={onOpenQuiz}>
+            Take the scent quiz
+          </button>
+        </div>
       )}
     </>
   );
@@ -191,7 +208,7 @@ interface SimilarPaneProps {
 }
 
 function SimilarPane({ result, loading, error, children }: SimilarPaneProps) {
-  if (loading) return <Loading label="Finding scents in the same family…" />;
+  if (loading) return <SkeletonList />;
   if (error !== null) return <ErrorNote error={error} />;
   if (result === null) return null;
 
@@ -199,14 +216,25 @@ function SimilarPane({ result, loading, error, children }: SimilarPaneProps) {
     <>
       {children}
       <h2>Like {result.data.anchor.name}</h2>
-      {result.data.results.length === 0 && <Empty>No close matches in the catalogue yet.</Empty>}
+      {result.data.results.length === 0 && (
+        <Empty title="Nothing close yet">No close matches in the catalogue yet.</Empty>
+      )}
       {result.data.results.map((entry) => (
         <article className="card" key={entry.product_id}>
-          <h3>{entry.name}</h3>
-          <p className="muted small">
-            {entry.label.replace(/_/g, ' ')} · {price(entry.price_ngn)}
+          <div className="product-main">
+            <div className="product-thumb" aria-hidden="true">
+              <Flower2 size={22} aria-hidden="true" />
+            </div>
+            <div className="product-head">
+              <h3>{entry.name}</h3>
+              <p className="muted small product-meta">
+                {entry.label.replace(/_/g, ' ')} · {price(entry.price_ngn)}
+              </p>
+            </div>
+          </div>
+          <p className="small product-reason">
+            Shared notes: {entry.shared_notes.join(', ') || 'none'}
           </p>
-          <p className="small">Shared notes: {entry.shared_notes.join(', ') || 'none'}</p>
         </article>
       ))}
     </>
