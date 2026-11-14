@@ -136,8 +136,14 @@ If that sentence is true, v1 ships. Everything else is deferred.
 | Ratings and feedback | Per recommendation, drives personalisation | P1 |
 | Account and auth | Email OTP, anonymous-to-account upgrade | P0 |
 | Saved products (list only) | Wishlist and owned | P1 |
+| Routine card | One generic body routine (3 steps), every step with why + inputs | P1 |
+| Progress check-ins | Weekly completion + skin feel, latest two only, completion streak | P1 |
+| Tips | Fixed curated set, reviewed once, deterministic order | P1 |
 | Perfume bottle scanner | Photo of bottle to identify product | P2 |
 | Affiliate links | Retailer links with disclosure | Phase 5 |
+
+Routine, tips, and check-ins contain no supplements, treatment, triage, or user-generated
+content (§6.3 stands unamended).
 
 ### 6.3 Out of scope, permanently for v1
 
@@ -155,7 +161,9 @@ If that sentence is true, v1 ships. Everything else is deferred.
 Kill switches if the build runs late. Applied in this order, no re-planning meeting required:
 
 1. Drop pairing (§10 FR-9) and similar-to (FR-8) to Phase 3.
-2. Drop skin history trend view; keep only latest analysis.
+2. Drop skin history trend view; keep only latest analysis. Carve-out: weekly check-ins (§10
+   FR-16) are not a skin-history trend — the app shows the latest two entries plus a completion
+   streak, never a chart, trend line, or "improving/worsening" language.
 3. Reduce catalogue seed to 150 creams and 250 perfumes, maintaining coverage of 20 NGN price bands.
 4. Drop perfume recommendations to a waitlist screen, ship cream-only. **This is the last resort** — it removes the product's differentiated half.
 
@@ -190,7 +198,8 @@ Root
 │   ├── /skin-basics         Skin type, top 2 concerns, climate
 │   ├── /capture             Skin photo
 │   └── /scent-quiz          6-step fragrance preference quiz
-├── /home                    Dashboard: profile card, next actions, recent results
+├── /home                    Dashboard: profile card, next actions, recent results,
+│                            routine card, tips strip, check-ins (no new route or tab)
 ├── /skin
 │   ├── /                    Latest analysis + history list
 │   └── /new                 Capture again
@@ -238,7 +247,7 @@ Every screen must define these five states: **default**, **loading** (skeleton o
 | S4 | Skin basics | Seed the profile before analysis | Skin type (dry, normal, oily, combination, not sure), top 2 concerns (dryness, flakiness, uneven tone, body acne, sensitivity, texture), climate (auto-detected, editable: hot-humid, hot-dry, temperate) | "Not sure" is a valid answer everywhere. Max 2 concerns — more reduces ranking signal quality. |
 | S5 | Capture | Get a usable image | Live preview, framing guide (forearm, upper arm or leg; 15–25 cm distance), lighting hints, flash toggle, gallery upload, quality feedback before submit | Rejects on blur, low light, glare, non-skin subject, or resolution below 720p short edge. Max 3 retakes before offering questionnaire-only fallback. Must degrade to file input where `getUserMedia` is unavailable. |
 | S6 | Analysis | Show progress and result | Progress with named stages ("checking lighting", "reading texture", "matching products"), then result card: tone with Fitzpatrick band, undertone, evenness score, top concerns, confidence, 3 recommended creams, "not a diagnosis" note | Timeout at 25s → retry or continue later. Low confidence (< 0.55) → retake prompt, no recommendations generated. Cancellable. |
-| S7 | Home | Orient returning users | Profile summary card, last analysis, "scan a product", "my creams", "my perfumes", unviewed new results | Empty state for new user routes to onboarding. Cached last results render offline with a "showing saved data" chip. |
+| S7 | Home | Orient returning users | Profile summary card, last analysis, "scan a product", "my creams", "my perfumes", unviewed new results, routine card (3 steps with why + inputs), tips strip, weekly check-in (latest two + streak) | Empty state for new user routes to onboarding. Cached last results render offline with a "showing saved data" chip. Cached routine renders offline with a "showing saved routine" chip. Queued check-in shows "saved on this phone, will sync" until flushed. |
 | S8 | Creams | Ranked recommendations | Cards with image, name, brand, price, match score, one-line reason, key attributes (fragrance-free, vegan, non-comedogenic), filters (max price, fragrance-free, vegan, availability), sort (match, price) | Minimum 8 results or an honest "we only have 5 matches for these filters" message with a filter reset. Filters must never silently return zero. |
 | S9 | Cream detail | Decide | Ingredients with benefit/caution annotations, why this matched (full score breakdown), where to buy, save, rate, "report wrong data" | Offline: show cached product, disable buy links. |
 | S10 | Scan | Read an ingredient list | Camera or upload, crop and rotate confirmation, OCR progress, then verdict: `good` / `okay` / `avoid` with severity colour plus icon plus text, flagged ingredients with reasons, beneficial ingredients, personalised explanation, matched product link if known | Unreadable image → "retake" with a specific failure reason ("text too small", "glare on label", "only part of the list visible"). Never guess a verdict from a partial parse. |
@@ -369,6 +378,24 @@ Capture a skin photo, validate quality, and produce a structured skin analysis.
 - **AC-14.2** Given a scan is submitted offline, then it is queued and processed on reconnect with a pending badge.
 - **AC-14.3** Given the analysis service is unavailable, then the user is told plainly and offered a retry; no partial result is stored.
 
+### FR-15 · Routine and tips · P1
+
+One generic body routine plus a fixed set of curated tips, both rendered with reasons.
+
+- **AC-15.1** Given any user (including anonymous), then the routine card shows the same 3 steps, each with an instruction, a why, and the inputs behind it, all ≤ 140 chars.
+- **AC-15.2** Given the routine content, then nothing is served before an advisor review timestamp; a wording change ships as a new migration plus a new `content_version`, never an edit.
+- **AC-15.3** Given a user with skin basics plus at least one owned cream, then a future release may select a personalized routine; until then the generic routine is shown with no branching on profile data.
+- **AC-15.4** Given any tip, then it carries a body, a why, and inputs, is ≤ 140 chars, and contains no medical, treatment, triage, supplement, or tone-judgment language.
+
+### FR-16 · Progress check-ins · P1
+
+Weekly self-reported follow-through, latest two only — not a skin-history trend.
+
+- **AC-16.1** Given any user (including anonymous), then they can record one check-in per Lagos calendar day (completion + optional feel), editable the same day, removable afterwards.
+- **AC-16.2** Given the check-in summary, then it shows at most the latest two entries plus a completion streak; never a chart, trend line, or "improving/worsening" language.
+- **AC-16.3** Given the device is offline, then the check-in queues on the phone with a "will sync" note and flushes idempotently on reconnect (natural key: user + Lagos day).
+- **AC-16.4** Given a `checked_on` outside ±1 day of the server Lagos day, then the request is rejected (400).
+
 ### Requirement traceability
 
 | Requirement | Screens | Data entities | Release |
@@ -387,6 +414,8 @@ Capture a skin photo, validate quality, and produce a structured skin analysis.
 | FR-12 | S10 variant | `scans` | Phase 4 |
 | FR-13 | S19 | `consent_records`, `users` | Phase 1 |
 | FR-14 | S20 | — | Phase 1 |
+| FR-15 | S7 | `routine_templates`, `routine_steps`, `tips` | Phase 3 |
+| FR-16 | S7 | `check_ins` | Phase 3 |
 
 ---
 
@@ -538,6 +567,14 @@ Postgres 16. All tables carry `created_at timestamptz default now()` and `update
 
 **`saved_items`** — `id`, `user_id`, `product_id`, `list` enum(`wishlist`,`owned`), unique(user_id, product_id, list).
 
+**`routine_templates`** — `id`, `slug` unique, `title`, `kind` enum(`body_basic`), `audience_skin_types` text[], `audience_concerns` text[], `content_version`, `is_active`. Read-only to the request path.
+
+**`routine_steps`** — `id`, `template_id` fk, `position` smallint 1–8 (unique per template), `title`, `instruction` (≤140), `why` (≤140), `inputs` text[], `tip_id` fk null. Read-only to the request path.
+
+**`tips`** — `id`, `slug` unique, `topic` enum(`routine`,`scent`,`sun`,`ingredients`), `body` (≤140), `why` (≤140), `inputs` text[], `sort_order`, `reviewed_at`, `reviewed_by`, `is_active`. Nothing servable before review. Read-only to the request path.
+
+**`check_ins`** — `id`, `user_id`, `checked_on` date (Lagos day, ±1 day), `completion` enum(`skipped`,`partly`,`done`), `feel` enum(`drier`,`about_same`,`more_comfortable`,`not_sure`) null, soft delete, unique live (user_id, checked_on).
+
 **`data_requests`** — `id`, `user_id`, `kind` enum(`export`,`delete`), `status`, `requested_at`, `completed_at`.
 
 **`product_reports`** — `id`, `product_id`, `user_id`, `kind` enum(`price`,`availability`,`ingredients`,`details`), `payload` jsonb, `status`.
@@ -554,6 +591,7 @@ users 1─1 fragrance_profiles
 users 1─n sensitivities ─n─1 ingredients
 users 1─n scans ─1─n scan_findings
 users 1─n saved_items ─n─1 products
+users 1─n check_ins
 brands 1─n products 1─n product_variants
 products n─n ingredients (product_ingredients)
 products n─n fragrance_notes (product_notes)
@@ -625,6 +663,10 @@ recommendations 1─n feedback
 | POST | `/feedback` | Record a recommendation action | Idempotent per recommendation+action |
 | GET, POST | `/saved-items` | List, save | |
 | DELETE | `/saved-items/{id}` | Remove | |
+| GET | `/routine` | Generic routine + reviewed tips + disclaimer | Curated content, no auth beyond session |
+| GET | `/check-ins` | Latest-two summary + streak | |
+| POST | `/check-ins` | Record one check-in | Idempotent per user + Lagos day; 201 |
+| DELETE | `/check-ins/{id}` | Remove a check-in | Soft delete |
 | GET | `/meta/taxonomies` | Families, concerns, notes, occasions, price bands | Cached 24h, used for UI labels |
 
 ### 12.3 Recommendation response shape
@@ -932,6 +974,7 @@ A product may be recommended only when: name, brand, category, price, size, at l
 | Scan images | OCR | Explicit consent | 24 hours |
 | Scanned text and findings | History | Contract | Account lifetime |
 | Ratings and feedback | Personalisation | Contract | Account lifetime |
+| Check-in completion and feel | Progress display | Contract | Account lifetime |
 | Product reports | Data quality | Legitimate interest | 24 months |
 | Analytics events | Product metrics | Legitimate interest, no special category data | 90 days |
 | Logs | Security | Legitimate interest | 30 days |
@@ -980,6 +1023,8 @@ Must be listed in the privacy policy with purpose, location, and a link to their
 - **Ingredient verdict:** "Verdicts are based on published information about ingredients and your saved sensitivities. Labels change — check the packaging."
 - **Perfume:** "Fragrance is subjective and behaves differently on every skin. Longevity estimates are guidance, not a guarantee."
 - **Allergen flag:** "We can only check what is disclosed. Many fragrances do not list their full composition."
+- **Routine:** "This routine is general cosmetic guidance, not medical advice. Skin changes have many causes, so see a dermatologist if something worries you."
+- **Check-ins:** "Check-ins are your own notes. Two entries show what changed lately, not a medical trend."
 
 ---
 
@@ -1092,6 +1137,10 @@ Events are named in `snake_case`, past tense, and describe a user action or a sy
 | `perfume_recommendations_viewed` | `count`, `latency_ms` | List rendered |
 | `similar_search_used` | `anchor_in_catalogue`, `cheaper_only` | Search submitted |
 | `pairing_viewed` | `pair_count` | Pairing screen rendered |
+| `routine_viewed` | `step_count`, `offline` | Routine card rendered |
+| `tip_opened` | `tip_id`, `topic` | "Why" expanded on a tip or step |
+| `check_in_recorded` | `completion`, `feel`, `streak_bucket`, `queued` | Check-in saved or queued |
+| `check_in_sync_failed` | `error_code` | Queued flush failed |
 | `sensitivity_added` | `severity`, `matched` | Sensitivity saved |
 | `product_rated` | `kind`, `rating`, `product_id` | Rating submitted |
 | `product_report_submitted` | `kind` | Report sent |
@@ -1216,6 +1265,7 @@ Sequenced so that every two weeks ends with something demonstrable. Estimates ar
 | E15 · Analytics and flags | Tracking plan, client and server events, dashboards, alerts | 5 | E1 |
 | E16 · PWA, a11y, performance | Service worker, offline shell, budgets, audits, fixes | 8 | E1 |
 | E17 · Beta hardening | E2E suite, bug bash, load test, pen test remediation, catalogue top-up | 10 | All |
+| E18 · Routine, tips, check-ins | Curated routine + tips content, check-in table, Home sections, offline queue | 4 | E5, E16 |
 
 **Sequenced critical path:** E1 → E2 → E3/E4 → E5 → E6 → E7 → E8 → E9 → E10 → E11 → E12/E13 → E14/E15/E16 → E17.
 
@@ -1262,6 +1312,7 @@ Every open question from v0.1 is resolved here. Each decision has an owner and a
 | D10 | Is the perfume scanner in MVP? | No, Phase 4 | Recognition accuracy for bottles is a separate, expensive problem | Phase 4 go/no-go | Product |
 | D11 | How do we handle users under 16? | Blocked at the age gate; no processing beyond the gate answer | Simpler than verifiable parental consent and not core to the business | If a compliant parental-consent flow is built | Legal |
 | D12 | What is the verdict vocabulary? | Exactly three: `good`, `okay`, `avoid`. No percentages on the verdict itself | Three is decision-useful; more invites over-reading | If user testing shows ambiguity, add a fourth only with evidence | Product |
+| D13 | How do routines, tips, and progress work? | Curated static routine + reviewed tips; weekly self-reported check-ins, latest two + streak, no trend rendering; generic first, personalization gated on skin basics + one owned cream | Workout-planner model: log completion, defer measurement; photo checks blocked on 0003; see decision 0004 | If re-scan comparison ships, revisit trend ban (§6.4) | Product |
 
 **Still open (do not block build):**
 

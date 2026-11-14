@@ -207,6 +207,85 @@ export interface WireScanResponse {
 
 export type ScanResponse = WireScanResponse;
 
+// ---------------------------------------------------------------- routine, tips, check-ins
+//
+// Curated body-care routine + reviewed tips + weekly self-reported check-ins (decision 0004).
+// Follows the WirePairing shape: snake_case, { data, meta }, pre-rendered strings, no trend
+// fields — progress surfaces the latest two check-ins only (PRD §6.4 carve-out).
+
+export type CheckInCompletion = 'skipped' | 'partly' | 'done';
+export type SkinFeel = 'drier' | 'about_same' | 'more_comfortable' | 'not_sure';
+export type TipTopic = 'routine' | 'scent' | 'sun' | 'ingredients';
+
+export interface WireRoutineStep {
+  readonly id: string;
+  readonly position: number;
+  readonly title: string;
+  /** Template-first, ≤ 140 chars. */
+  readonly instruction: string;
+  /** Names the inputs behind the step, ≤ 140 chars. */
+  readonly why: string;
+  readonly inputs: readonly string[];
+  readonly tip_id: string | null;
+}
+
+export interface WireTip {
+  readonly id: string;
+  readonly topic: TipTopic;
+  /** ≤ 140 chars, reviewed once before serving. */
+  readonly body: string;
+  readonly why: string;
+  readonly inputs: readonly string[];
+}
+
+export interface WireRoutine {
+  readonly data: {
+    readonly routine: {
+      readonly slug: string;
+      readonly title: string;
+      readonly content_version: string;
+      readonly steps: readonly WireRoutineStep[];
+    };
+    readonly tips: readonly WireTip[];
+    readonly disclaimer: string;
+  };
+  readonly meta: Meta;
+}
+
+export type RoutineResponse = WireRoutine;
+
+export interface WireCheckIn {
+  readonly id: string;
+  /** Lagos calendar day, YYYY-MM-DD. */
+  readonly checked_on: string;
+  readonly completion: CheckInCompletion;
+  readonly feel: SkinFeel | null;
+  readonly created_at: string;
+}
+
+/** Latest two only. No history arrays, no trend fields. */
+export interface WireCheckIns {
+  readonly data: {
+    readonly today: string;
+    readonly latest: WireCheckIn | null;
+    readonly previous: WireCheckIn | null;
+    readonly streak_days: number;
+    readonly checked_in_today: boolean;
+    readonly total_check_ins: number;
+    readonly disclaimer: string;
+  };
+  readonly meta: Meta;
+}
+
+export type CheckInsResponse = WireCheckIns;
+
+export interface CheckInInput {
+  readonly completion: CheckInCompletion;
+  readonly feel?: SkinFeel | null;
+  /** Offline queue only; server accepts at most ±1 day around the Lagos day, else 400. */
+  readonly checked_on?: string;
+}
+
 // ---------------------------------------------------------------- skin analysis
 
 export interface WireAnalysis {
