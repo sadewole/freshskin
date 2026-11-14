@@ -27,7 +27,7 @@ Auth/CORS settled in decision 0002: host-only cookie on the api origin,
 - **Read the PRD first for product work** — `FreshSkin PRD.md` §5 principles resolve design
   arguments (earlier wins), §8–§9 define screens and IA.
 - **Consume tokens, never invent colors** — every color/font/radius resolves to
-  `@freshskin/ui/tokens.css`; no hardcoded hex outside it (enforced by review, not lint).
+  `@freshskin/ui/tokens.css`; no hardcoded hex outside it (`pnpm lint:tokens`, part of `pnpm verify`).
 - **Explain or omit** (principle 1) — every score, verdict, recommendation shows a
   one-sentence reason + the inputs behind it. No unexplained number.
 - **Deterministic before generative** (principle 2) — rules/allergen blocks are never

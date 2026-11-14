@@ -15,7 +15,9 @@
     "db:up": "docker rm -f freshskin-pg >/dev/null 2>&1; docker run -d --name freshskin-pg -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=freshskin -p 55432:5432 postgres:16",
     "db:migrate": "node apps/api/scripts/migrate.mjs",
     "db:seed": "node apps/api/scripts/seed.mjs",
-    "db:reset": "pnpm db:up && sleep 3 && DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/freshskin pnpm db:migrate && DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/freshskin pnpm db:seed"
+    "db:reset": "pnpm db:up && sleep 3 && DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/freshskin pnpm db:migrate && DATABASE_URL=postgres://postgres:postgres@127.0.0.1:55432/freshskin pnpm db:seed",
+    "lint:tokens": "grep -rn '#[0-9a-fA-F]\\{3,8\\}' apps/web/src apps/marketing/src packages/ui --include='*.css' --include='*.tsx' --include='*.ts' 2>/dev/null | grep -v 'packages/ui/tokens.css' | grep -v '\\.test\\.' && { echo 'HEX OUTSIDE TOKENS \u2014 see AGENTS.md'; exit 1; } || echo 'tokens clean'",
+    "verify": "pnpm lint:tokens && pnpm typecheck && pnpm build && pnpm test"
   },
   "dependencies": {
     "@freshskin/contracts": "workspace:*",
