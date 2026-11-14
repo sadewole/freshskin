@@ -58,6 +58,13 @@ export default defineConfig({
       devOptions: { enabled: false },
     }),
   ],
+  optimizeDeps: {
+    // Pre-bundle every runtime dependency up front. Without this, Vite discovers `motion/react`
+    // and `lucide-react` lazily on first import, re-runs the optimizer mid-session, and rewrites
+    // the `chunk-*.js` hashes under a browser still holding the old ones — "file does not exist
+    // in the optimize deps directory". Listing them keeps the cache stable across a dev session.
+    include: ['react', 'react-dom', 'react-dom/client', 'react/jsx-dev-runtime', 'lucide-react', 'motion/react'],
+  },
   build: {
     outDir: resolve(__dirname, '../../dist/apps/web'),
     emptyOutDir: true,
