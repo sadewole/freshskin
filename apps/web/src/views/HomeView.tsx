@@ -1,9 +1,9 @@
 import { useCallback, useState, type ReactNode } from 'react';
 import { Droplets, Flower2, Heart, ScanLine, ShieldCheck, Sparkles } from 'lucide-react';
-import { getCreams, getPerfumes, getSimilar } from '../api/client';
-import type { ProductKind, SimilarResponse } from '../api/types';
+import { getCreams, getPerfumes, getRoutine, getSimilar } from '../api/client';
+import type { ProductKind, RoutineResponse, SimilarResponse } from '../api/types';
+import { readCachedRoutine, writeCachedRoutine } from '../data/content-cache';
 import { useAsync } from '../data/useAsync';
-import { ROUTINE_FIXTURE } from '../data/routine-fixture';
 import { navigate, useDocumentTitle } from '../router';
 import { useSession } from '../session/SessionProvider';
 import { ErrorNote, Empty, SkeletonList } from '../ui/Async';
@@ -29,9 +29,9 @@ const QUICK_ACTIONS = [
  * Layout borrows the reference patterns (hero CTA + action grid + curated picks) without
  * their commerce chrome: no cart, no deals carousel, no category shop. Every section maps
  * to a PRD element: hero → "scan a product", grid → creams/perfumes/saved, list → results.
- * Phase 1 serves the routine + tips from a reviewed local fixture (`data/routine-fixture.ts`,
- * mirrored from the frozen 0014 seed); Phase 3 swaps the source to `GET /routine` and deletes
- * the fixture — the sections below keep their markup.
+ * Phase 3 serves the routine + tips from `GET /routine` with a localStorage fallback for
+ * the non-personal payload ("showing saved data" chip); check-ins read the live summary
+ * and queue offline entries for the next flush.
  */
 export function HomeView() {
   const { me } = useSession();
@@ -63,6 +63,21 @@ export function HomeView() {
     setPane({ kind: 'results' });
     setQuizOpen(false);
   };
+
+  const loadRoutine = useCallback(async (): Promise<RoutineResponse> => {
+    try {
+      const response = await getRoutine();
+      writeCachedRoutine(response);
+      return { data: response.data, meta: response.meta };
+    } catch (caught) {
+      // Offline or unreachable: render the cached non-personal payload with a chip.
+      const cached = readCachedRoutine();
+      if (cached === null) throw caught;
+      return { data: cached.data, meta: { request_id: 'cache' } };
+    }
+  }, []);
+
+  const routine = useAsync(loadRoutine, []);
 
   const applyPrice = () => {
     const parsed = Number(maxPriceInput);
@@ -148,8 +163,7 @@ export function HomeView() {
         />
       )}
 
-      <RoutineCard routine={ROUTINE_FIXTURE.data} />
-      <TipsStrip tips={ROUTINE_FIXTURE.data.tips} />
+      <RoutineSection routine={routine} />
 
       <div className="section-head">
         <div>
@@ -209,6 +223,35 @@ export function HomeView() {
         )}
       </div>
     </section>
+  );
+}
+
+interface RoutineSectionProps {
+  readonly routine: {
+    readonly data: RoutineResponse | null;
+    readonly loading: boolean;
+    readonly error: unknown;
+  };
+}
+
+function RoutineSection({ routine }: RoutineSectionProps) {
+  if (routine.loading) return <SkeletonList />;
+  if (routine.error !== null && routine.data === null) {
+    return <ErrorNote error={routine.error} />;
+  }
+  if (routine.data === null) return null;
+
+  const showingSaved = routine.data.meta.request_id === 'cache';
+  return (
+    <>
+      {showingSaved && (
+        <p className="muted small sync-note" role="status">
+          Showing saved data — connect to refresh.
+        </p>
+      )}
+      <RoutineCard routine={routine.data.data} />
+      <TipsStrip tips={routine.data.data.tips} />
+    </>
   );
 }
 

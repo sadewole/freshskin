@@ -1,4 +1,6 @@
 import type {
+  CheckInCompletion,
+  CheckInsResponse,
   ConsentKind,
   CreatedScan,
   CreamQuery,
@@ -6,11 +8,13 @@ import type {
   FragranceProfileWire,
   Me,
   RecommendationResponse,
+  RoutineResponse,
   SavedList,
   SavedResponse,
   ScanResponse,
   SimilarResponse,
   SiteMeta,
+  SkinFeel,
 } from './types';
 
 /**
@@ -178,6 +182,30 @@ export async function saveItem(productId: string, list: SavedList = 'wishlist'):
 
 export async function removeSaved(productId: string, list: SavedList): Promise<void> {
   await request<null>('/saved-items', { method: 'DELETE', query: { product_id: productId, list } });
+}
+
+// ---------------------------------------------------------------- routine + check-ins
+
+export function getRoutine(): Promise<RoutineResponse> {
+  return request<RoutineResponse>('/routine');
+}
+
+export function getCheckIns(): Promise<CheckInsResponse> {
+  return request<CheckInsResponse>('/check-ins');
+}
+
+export interface CheckInBody {
+  readonly completion: CheckInCompletion;
+  readonly feel: SkinFeel | null;
+  readonly checked_on?: string;
+}
+
+export function saveCheckIn(body: CheckInBody): Promise<CheckInsResponse> {
+  return request<CheckInsResponse>('/check-ins', { method: 'POST', body });
+}
+
+export async function deleteCheckIn(id: string): Promise<void> {
+  await request<null>(`/check-ins/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
 // ---------------------------------------------------------------- scans

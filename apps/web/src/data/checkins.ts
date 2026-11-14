@@ -1,30 +1,31 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { CheckInCompletion, CheckInsResponse, SkinFeel, WireCheckIn } from '../api/types';
+import { ApiError, ensureSession, getCheckIns, saveCheckIn } from '../api/client';
+import type { CheckInCompletion, CheckInsResponse, SkinFeel } from '../api/types';
 import { useSession } from '../session/SessionProvider';
 
-const STORE_PREFIX = 'freshskin.checkins.v1';
+const OUTBOX_PREFIX = 'freshskin.checkins.outbox.v1';
 
-interface StoredCheckIn {
+interface OutboxEntry {
   readonly completion: CheckInCompletion;
   readonly feel: SkinFeel | null;
+  /** Lagos day the entry belongs to; defaults to the recording day at flush time. */
   readonly checked_on: string;
-  readonly created_at: string;
-  readonly synced: boolean;
+  readonly queued_at: string;
 }
 
-function storeKey(userId: string): string {
-  return `${STORE_PREFIX}.${userId}`;
+function outboxKey(userId: string): string {
+  return `${OUTBOX_PREFIX}.${userId}`;
 }
 
-function readStore(userId: string | null): readonly StoredCheckIn[] {
+function readOutbox(userId: string | null): readonly OutboxEntry[] {
   if (userId === null) return [];
   try {
-    const raw = localStorage.getItem(storeKey(userId));
+    const raw = localStorage.getItem(outboxKey(userId));
     if (raw === null) return [];
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
     return parsed.filter(
-      (entry): entry is StoredCheckIn =>
+      (entry): entry is OutboxEntry =>
         typeof entry === 'object' &&
         entry !== null &&
         'completion' in entry &&
@@ -35,174 +36,161 @@ function readStore(userId: string | null): readonly StoredCheckIn[] {
   }
 }
 
-function writeStore(userId: string, rows: readonly StoredCheckIn[]): void {
+function writeOutbox(userId: string, entries: readonly OutboxEntry[]): void {
   try {
-    localStorage.setItem(storeKey(userId), JSON.stringify(rows));
+    localStorage.setItem(outboxKey(userId), JSON.stringify(entries));
   } catch {
-    // Storage full or blocked (private mode): the check-in lives in memory for this
-    // session. Losing it on reload beats crashing the Home view.
+    // Storage full or blocked: the entry lives in memory for this session only.
   }
 }
 
-function lagosToday(now: Date = new Date()): string {
+function lagosToday(): string {
   // Africa/Lagos is UTC+1 with no DST; the server computes the same value.
-  const lagos = new Date(now.getTime() + 60 * 60 * 1000);
-  return lagos.toISOString().slice(0, 10);
-}
-
-function toWire(row: StoredCheckIn, index: number): WireCheckIn {
-  return {
-    id: `local-${row.checked_on}`,
-    checked_on: row.checked_on,
-    completion: row.completion,
-    feel: row.feel,
-    created_at: row.created_at,
-    // Local ids carry the index so React keys stay stable across renders.
-    ...(index < 0 ? { id: `local-${row.checked_on}` } : {}),
-  };
+  return new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 10);
 }
 
 /**
- * Local-first check-in store for the Phase 1 web slice. Same-day writes replace (one
- * check-in per Lagos day, last write wins); streak counts back over consecutive
- * non-skipped days and an unchecked today does not break it. Mirrors the server
- * `summariseProgress` semantics so the Phase 3 API switch changes the source, not the rules.
+ * Check-ins against the live API (Phase 3). The server summary is the source of truth;
+ * unsent entries queue in a per-user outbox and flush idempotently — the natural key
+ * (user + Lagos day) means replays overwrite instead of duplicating. The outbox is keyed
+ * by `user_id` and cleared on sign-out, so an expired anonymous session can never
+ * misattribute a queued entry. `pending_sync` drives the "Saved on this phone, will sync"
+ * chip; offline reads show the last server summary with nothing queued on top of it.
  */
-export function summariseLocal(
-  rows: readonly StoredCheckIn[],
-  today: string,
-): {
-  latest: WireCheckIn | null;
-  previous: WireCheckIn | null;
-  streak_days: number;
-  checked_in_today: boolean;
-  total_check_ins: number;
+export function useCheckIns(): {
+  summary: CheckInsResponse['data'] | null;
+  error: unknown;
+  loading: boolean;
   pending_sync: boolean;
-} {
-  const live = [...rows]
-    .filter((row) => row.checked_on <= today)
-    .sort((a, b) => (a.checked_on < b.checked_on ? 1 : a.checked_on > b.checked_on ? -1 : 0));
-  const [latestRow, previousRow] = [live[0] ?? null, live[1] ?? null];
-  const checked_in_today = latestRow?.checked_on === today;
-
-  let streak_days = 0;
-  let cursor = today;
-  // Walk back day by day from today (or yesterday if today is unchecked); stop at the
-  // first missing or skipped day. A missing today never breaks an existing streak.
-  const byDay = new Map(live.map((row) => [row.checked_on, row]));
-  if (!byDay.has(cursor)) {
-    const yesterday = new Date(`${cursor}T00:00:00Z`);
-    yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-    cursor = yesterday.toISOString().slice(0, 10);
-  }
-  for (;;) {
-    const row = byDay.get(cursor);
-    if (row === undefined || row.completion === 'skipped') break;
-    streak_days += 1;
-    const previous = new Date(`${cursor}T00:00:00Z`);
-    previous.setUTCDate(previous.getUTCDate() - 1);
-    cursor = previous.toISOString().slice(0, 10);
-  }
-
-  return {
-    latest: latestRow === null ? null : toWire(latestRow, 0),
-    previous: previousRow === null ? null : toWire(previousRow, 1),
-    streak_days,
-    checked_in_today,
-    total_check_ins: live.length,
-    pending_sync: live.some((row) => !row.synced),
-  };
-}
-
-const listeners = new Set<() => void>();
-function notify(): void {
-  for (const notifyListener of listeners) notifyListener();
-}
-
-function subscribe(notifyListener: () => void): () => void {
-  listeners.add(notifyListener);
-  return () => {
-    listeners.delete(notifyListener);
-  };
-}
-
-/** Check-ins for the current session user, re-read from localStorage on every notify. */
-export function useLocalCheckIns(): {
-  summary: ReturnType<typeof summariseLocal> & { today: string };
-  record: (completion: CheckInCompletion, feel: SkinFeel | null) => void;
-  clear: () => void;
+  record: (completion: CheckInCompletion, feel: SkinFeel | null) => Promise<void>;
 } {
   const { me } = useSession();
   const userId = me?.user_id ?? null;
-  const [tick, setTick] = useState(0);
+  const [summary, setSummary] = useState<CheckInsResponse['data'] | null>(null);
+  const [error, setError] = useState<unknown>(null);
+  const [loading, setLoading] = useState(true);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [nonce, setNonce] = useState(0);
 
-  useEffect(() => subscribe(() => setTick((value) => value + 1)), []);
-  void tick;
+  useEffect(() => {
+    if (userId === null) {
+      setSummary(null);
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
 
-  const rows = readStore(userId);
-  const today = lagosToday();
+    const flush = async (): Promise<void> => {
+      // 401 mid-flight means the anonymous session lapsed; one fresh session, then retry.
+      // The outbox key already scopes entries to this user_id, and sign-out clears every
+      // key, so a queue can never be flushed under a different user.
+      const queued = readOutbox(userId);
+      for (const entry of queued) {
+        try {
+          await saveCheckIn({
+            completion: entry.completion,
+            feel: entry.feel,
+            checked_on: entry.checked_on,
+          });
+        } catch (caught) {
+          if (!(caught instanceof ApiError) || !caught.isUnauthenticated) throw caught;
+          await ensureSession();
+          await saveCheckIn({
+            completion: entry.completion,
+            feel: entry.feel,
+            checked_on: entry.checked_on,
+          });
+        }
+      }
+      writeOutbox(userId, []);
+      if (!cancelled) setPendingCount(0);
+    };
+
+    void (async () => {
+      try {
+        await flush();
+      } catch {
+        // Offline or unreachable: keep the queue, show the last summary below.
+        if (!cancelled) setPendingCount(readOutbox(userId).length);
+      }
+      try {
+        const response = await getCheckIns();
+        if (!cancelled) {
+          setSummary(response.data);
+          setPendingCount(readOutbox(userId).length);
+        }
+      } catch (caught) {
+        if (!cancelled) setError(caught);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    const onOnline = (): void => {
+      setNonce((value) => value + 1);
+    };
+    window.addEventListener('online', onOnline);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('online', onOnline);
+    };
+  }, [userId, nonce]);
 
   const record = useCallback(
-    (completion: CheckInCompletion, feel: SkinFeel | null) => {
+    async (completion: CheckInCompletion, feel: SkinFeel | null): Promise<void> => {
       if (userId === null) return;
-      const current = readStore(userId);
-      const entry: StoredCheckIn = {
-        completion,
-        feel,
-        checked_on: today,
-        created_at: new Date().toISOString(),
-        synced: false,
-      };
-      const next = [entry, ...current.filter((row) => row.checked_on !== today)];
-      writeStore(userId, next);
-      notify();
+      try {
+        const response = await saveCheckIn({ completion, feel });
+        setSummary(response.data);
+        setPendingCount(readOutbox(userId).length);
+      } catch (caught) {
+        if (caught instanceof ApiError && caught.isUnauthenticated) {
+          // Session lapsed mid-tap: one fresh session, then retry before queuing.
+          await ensureSession();
+          const response = await saveCheckIn({ completion, feel });
+          setSummary(response.data);
+          setPendingCount(readOutbox(userId).length);
+          return;
+        }
+        // Offline or unreachable: queue for the next flush (same-day replace keeps one
+        // entry per Lagos day), then refresh the local view optimistically.
+        const today = lagosToday();
+        const entry: OutboxEntry = {
+          completion,
+          feel,
+          checked_on: today,
+          queued_at: new Date().toISOString(),
+        };
+        const next = [entry, ...readOutbox(userId).filter((row) => row.checked_on !== today)];
+        writeOutbox(userId, next);
+        setPendingCount(next.length);
+        setError(caught);
+      }
     },
-    [userId, today],
+    [userId],
   );
 
-  const clear = useCallback(() => {
-    if (userId === null) return;
-    try {
-      localStorage.removeItem(storeKey(userId));
-    } catch {
-      // Already gone or blocked; nothing to clear.
-    }
-    notify();
-  }, [userId]);
-
-  const summary = summariseLocal(rows, today);
-  return { summary: { ...summary, today }, record, clear };
+  return {
+    summary,
+    error,
+    loading,
+    pending_sync: pendingCount > 0,
+    record,
+  };
 }
 
-/** Remove every stored check-in key on sign-out so a new session never inherits history. */
+/** Remove every check-in outbox key on sign-out so a new session never inherits the queue. */
 export function clearAllCheckInStores(): void {
   try {
     const doomed: string[] = [];
     for (let index = 0; index < localStorage.length; index += 1) {
       const key = localStorage.key(index);
-      if (key !== null && key.startsWith(STORE_PREFIX)) doomed.push(key);
+      if (key !== null && key.startsWith(OUTBOX_PREFIX)) doomed.push(key);
     }
     for (const key of doomed) localStorage.removeItem(key);
   } catch {
     // Storage blocked; nothing persisted to clear.
   }
-  notify();
-}
-
-/** Shape the local summary like the wire so components render one type pre- and post-API. */
-export function toCheckInsResponse(
-  summary: ReturnType<typeof summariseLocal> & { today: string },
-): CheckInsResponse {
-  return {
-    data: {
-      today: summary.today,
-      latest: summary.latest,
-      previous: summary.previous,
-      streak_days: summary.streak_days,
-      checked_in_today: summary.checked_in_today,
-      total_check_ins: summary.total_check_ins,
-      disclaimer: 'Check-ins are your own notes. Two entries show what changed lately, not a medical trend.',
-    },
-    meta: { request_id: 'local' },
-  };
 }

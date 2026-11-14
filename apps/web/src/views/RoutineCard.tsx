@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CalendarCheck2, Check } from 'lucide-react';
 import type { CheckInCompletion, RoutineResponse, SkinFeel } from '../api/types';
-import { toCheckInsResponse, useLocalCheckIns } from '../data/checkins';
+import { useCheckIns } from '../data/checkins';
 import { verdictEnter } from '../ui/motion';
 import { motion } from 'motion/react';
 
@@ -19,21 +19,20 @@ const FEEL_OPTIONS: readonly { value: SkinFeel; label: string }[] = [
 ];
 
 /**
- * Home routine section (PRD S7, FR-15/FR-16): the generic body routine, three reviewed
- * tips via TipsStrip, and the weekly check-in — completion chips, feel chips, streak line,
- * latest two entries, disclaimer. Local-first in Phase 1; the API switch keeps this markup.
+ * Home routine section (PRD S7, FR-15/FR-16): the generic body routine, reviewed tips via
+ * TipsStrip, and the weekly check-in — completion chips, feel chips, streak line, latest
+ * two entries, disclaimer. Check-ins read the live `GET /check-ins` summary and queue
+ * offline entries for the next flush; the section markup is unchanged from Phase 1.
  */
 export function RoutineCard({ routine }: { readonly routine: RoutineResponse['data'] }) {
-  const { summary, record } = useLocalCheckIns();
+  const { summary, pending_sync, record } = useCheckIns();
   const [completion, setCompletion] = useState<CheckInCompletion | null>(null);
   const [feel, setFeel] = useState<SkinFeel | null>(null);
   const [saved, setSaved] = useState(false);
-  const response = toCheckInsResponse(summary);
 
   const save = () => {
     if (completion === null) return;
-    record(completion, feel);
-    setSaved(true);
+    void record(completion, feel).then(() => setSaved(true));
   };
 
   return (
@@ -76,10 +75,10 @@ export function RoutineCard({ routine }: { readonly routine: RoutineResponse['da
           <CalendarCheck2 size={18} aria-hidden="true" />
           <h3>This week</h3>
         </div>
-        {response.data.checked_in_today ? (
+        {summary !== null && summary.checked_in_today ? (
           <motion.p className="muted" {...verdictEnter}>
             <Check size={14} aria-hidden="true" /> Logged for today
-            {response.data.streak_days > 1 && ` — ${response.data.streak_days} weeks in a row`}.
+            {summary.streak_days > 1 && ` — ${summary.streak_days} weeks in a row`}.
           </motion.p>
         ) : (
           <>
@@ -121,16 +120,16 @@ export function RoutineCard({ routine }: { readonly routine: RoutineResponse['da
             </button>
           </>
         )}
-        {response.data.total_check_ins > 0 && (
+        {summary !== null && summary.total_check_ins > 0 && (
           <p className="muted small checkin-history">
-            {response.data.latest !== null &&
-              `Latest: ${response.data.latest.completion.replace(/_/g, ' ')}${response.data.latest.feel !== null ? `, feeling ${response.data.latest.feel.replace(/_/g, ' ')}` : ''}. `}
-            {response.data.previous !== null &&
-              `Before: ${response.data.previous.completion.replace(/_/g, ' ')}${response.data.previous.feel !== null ? `, feeling ${response.data.previous.feel.replace(/_/g, ' ')}` : ''}.`}
+            {summary.latest !== null &&
+              `Latest: ${summary.latest.completion.replace(/_/g, ' ')}${summary.latest.feel !== null ? `, feeling ${summary.latest.feel.replace(/_/g, ' ')}` : ''}. `}
+            {summary.previous !== null &&
+              `Before: ${summary.previous.completion.replace(/_/g, ' ')}${summary.previous.feel !== null ? `, feeling ${summary.previous.feel.replace(/_/g, ' ')}` : ''}.`}
           </p>
         )}
-        <p className="muted small">{response.data.disclaimer}</p>
-        {summary.pending_sync && (
+        <p className="muted small">{routine.disclaimer}</p>
+        {pending_sync && (
           <p className="muted small sync-note">Saved on this phone, will sync.</p>
         )}
       </div>

@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ApiError, endSession, ensureSession, getSiteMeta, setConsent } from '../api/client';
 import type { ConsentKind, Me, SiteMeta } from '../api/types';
+import { clearAllCheckInStores } from '../data/checkins';
 
 /**
  * Session and site metadata: the only state that every view shares. Everything else — the
@@ -60,6 +61,7 @@ export function SessionProvider({ children }: { readonly children: ReactNode }) 
   }, []);
 
   const signOut = useCallback(async () => {
+    clearAllCheckInStores();
     await endSession();
     await load();
   }, [load]);
