@@ -1,21 +1,94 @@
 import { useState } from 'react';
 import { ArrowRight, Droplets, Flower2, Heart } from 'lucide-react';
+import { motion } from 'motion/react';
 import { saveItem } from '../api/client';
-import type { ProductKind, WireItem } from '../api/types';
+import type { ProductKind, WireItem, WireProduct } from '../api/types';
 import { price } from '../ui/Async';
+import { DUR_MED, EASE } from '../ui/motion';
 
-interface Props {
-  readonly item: WireItem;
-  readonly kind: ProductKind;
-  readonly onShowSimilar?: (productId: string) => void;
+function KindIcon({ kind }: { readonly kind: ProductKind }) {
+  return kind === 'perfume' ? (
+    <Flower2 size={24} aria-hidden="true" />
+  ) : (
+    <Droplets size={24} aria-hidden="true" />
+  );
 }
 
 /**
- * One recommendation. Every card carries its reason and its score breakdown, per the
- * product principle "explain or omit" — the breakdown is the inputs behind the score, so it
- * is always available rather than only on request.
+ * Forward-compatible thumb: the wire has no image field yet (see the old placeholder
+ * comment), so tiles render the kind icon until the catalogue carries `image_url` — then
+ * the photo shows, with the icon as the broken/missing fallback via onError.
  */
-export function ProductCard({ item, kind, onShowSimilar }: Props) {
+function Thumb({ kind, product }: { readonly kind: ProductKind; readonly product: WireProduct }) {
+  const imageUrl = (product as { readonly image_url?: unknown }).image_url;
+  const [imgOk, setImgOk] = useState(typeof imageUrl === 'string' && imageUrl.length > 0);
+  return (
+    <span className="tile-thumb" aria-hidden="true">
+      {imgOk && typeof imageUrl === 'string' ? (
+        <img src={imageUrl} alt="" loading="lazy" onError={() => setImgOk(false)} />
+      ) : (
+        <KindIcon kind={kind} />
+      )}
+    </span>
+  );
+}
+
+interface TileProps {
+  readonly item: WireItem;
+  readonly kind: ProductKind;
+  readonly index: number;
+  readonly onOpen: () => void;
+}
+
+/**
+ * Compact grid cell: photo-or-icon, name, price, score pill, top flag. Everything else
+ * (reason, breakdown, flags, actions) lives in `ProductDetail` inside the bottom sheet.
+ */
+export function ProductTile({ item, kind, index, onOpen }: TileProps) {
+  const { product } = item;
+  const score = Math.round(item.score);
+
+  return (
+    <motion.button
+      type="button"
+      className="tile"
+      onClick={onOpen}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: DUR_MED, ease: EASE, delay: Math.min(index * 0.05, 0.3) }}
+      whileTap={{ scale: 0.97 }}
+      aria-label={`${product.name}, ${price(product.price_ngn)}, match score ${score} out of 100`}
+    >
+      <Thumb kind={kind} product={product} />
+      <span className="tile-name">{product.name}</span>
+      <span className="tile-row">
+        <span className="muted small">{price(product.price_ngn)}</span>
+        <span
+          className={`score-pill${score >= 80 ? ' high' : score >= 60 ? ' mid' : ''}`}
+          aria-hidden="true"
+        >
+          {score}
+        </span>
+      </span>
+      {item.flags.length > 0 && (
+        <span className="tile-flag">{item.flags[0]?.replace(/_/g, ' ')}</span>
+      )}
+    </motion.button>
+  );
+}
+
+interface DetailProps {
+  readonly item: WireItem;
+  readonly kind: ProductKind;
+  readonly onShowSimilar: () => void;
+}
+
+/**
+ * Full recommendation detail, rendered inside the bottom sheet. Carries the reason, the
+ * score breakdown, flags, and actions — the explain-or-omit principle moved off the list,
+ * not removed.
+ */
+export function ProductDetail({ item, kind, onShowSimilar }: DetailProps) {
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
   const product = item.product;
 
@@ -36,13 +109,8 @@ export function ProductCard({ item, kind, onShowSimilar }: Props) {
   return (
     <article className="card product">
       <div className="product-main">
-        {/* Neutral placeholder until the catalogue carries product imagery. */}
         <div className="product-thumb" aria-hidden="true">
-          {kind === 'perfume' ? (
-            <Flower2 size={22} aria-hidden="true" />
-          ) : (
-            <Droplets size={22} aria-hidden="true" />
-          )}
+          <KindIcon kind={kind} />
         </div>
         <div className="product-head">
           <div className="card-head">
@@ -106,8 +174,8 @@ export function ProductCard({ item, kind, onShowSimilar }: Props) {
             </>
           )}
         </button>
-        {kind === 'perfume' && onShowSimilar !== undefined && (
-          <button className="ghost small with-icon" onClick={() => onShowSimilar(product.id)}>
+        {kind === 'perfume' && (
+          <button className="ghost small with-icon" onClick={onShowSimilar}>
             Similar scents <ArrowRight size={14} aria-hidden="true" />
           </button>
         )}

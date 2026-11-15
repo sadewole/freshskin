@@ -36,3 +36,21 @@ export const verdictEnter = {
   animate: { opacity: 1, y: 0 },
   transition: base,
 } as const;
+
+/** Bottom sheet: spring up with a hint of overshoot (the bounce). */
+export const sheetVariants: Variants = {
+  enter: { y: '100%' },
+  center: { y: 0 },
+  exit: { y: '100%' },
+};
+
+export const sheetTransition: Transition = { type: 'spring', stiffness: 420, damping: 38 };
+
+/** Sheet backdrop: fade only, so the panel stays the one moving meaning. */
+export const backdropVariants: Variants = {
+  enter: { opacity: 0 },
+  center: { opacity: 1 },
+  exit: { opacity: 0 },
+};
+
+export const backdropTransition: Transition = { duration: DUR_FAST, ease: EASE };

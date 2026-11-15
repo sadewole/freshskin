@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CalendarCheck2, Check } from 'lucide-react';
+import { ArrowRight, CalendarCheck2, Check } from 'lucide-react';
 import type { CheckInCompletion, RoutineResponse, SkinFeel } from '../api/types';
 import { useCheckIns } from '../data/checkins';
 import { verdictEnter } from '../ui/motion';
@@ -19,21 +19,20 @@ const FEEL_OPTIONS: readonly { value: SkinFeel; label: string }[] = [
 ];
 
 /**
- * Home routine section (PRD S7, FR-15/FR-16): the generic body routine, reviewed tips via
- * TipsStrip, and the weekly check-in — completion chips, feel chips, streak line, latest
- * two entries, disclaimer. Check-ins read the live `GET /check-ins` summary and queue
- * offline entries for the next flush; the section markup is unchanged from Phase 1.
+ * Compact routine preview for the Home hub: title, step count, first three steps, and the
+ * week streak. The full steps + check-in live in `RoutineDetail` inside the routine bottom
+ * sheet. The "Why these steps" list is gone — each step already carries its `why` inline,
+ * so the list only repeated them.
  */
-export function RoutineCard({ routine }: { readonly routine: RoutineResponse['data'] }) {
-  const { summary, pending_sync, record } = useCheckIns();
-  const [completion, setCompletion] = useState<CheckInCompletion | null>(null);
-  const [feel, setFeel] = useState<SkinFeel | null>(null);
-  const [saved, setSaved] = useState(false);
-
-  const save = () => {
-    if (completion === null) return;
-    void record(completion, feel).then(() => setSaved(true));
-  };
+export function RoutinePreview({
+  routine,
+  onOpen,
+}: {
+  readonly routine: RoutineResponse['data'];
+  readonly onOpen: () => void;
+}) {
+  const preview = routine.routine.steps.slice(0, 3);
+  const remaining = routine.routine.steps.length - preview.length;
 
   return (
     <section className="home-section" aria-labelledby="routine-title">
@@ -43,7 +42,63 @@ export function RoutineCard({ routine }: { readonly routine: RoutineResponse['da
           <h2 id="routine-title">{routine.routine.title}</h2>
         </div>
       </div>
+      <button type="button" className="routine-preview" onClick={onOpen}>
+        <ol className="routine-mini">
+          {preview.map((step) => (
+            <li key={step.id}>
+              <span className="routine-num" aria-hidden="true">
+                {step.position}
+              </span>
+              <span>{step.title}</span>
+            </li>
+          ))}
+        </ol>
+        <span className="routine-preview-more muted small">
+          {remaining > 0
+            ? `+${remaining} more steps — view full routine`
+            : 'View full routine'}{' '}
+          <ArrowRight size={14} aria-hidden="true" />
+        </span>
+      </button>
+    </section>
+  );
+}
 
+interface Checkins {
+  readonly summary: ReturnType<typeof useCheckIns>['summary'];
+  readonly pending_sync: boolean;
+  readonly record: ReturnType<typeof useCheckIns>['record'];
+}
+
+/**
+ * Full routine + weekly check-in (PRD S7, FR-15/FR-16), rendered inside the routine bottom
+ * sheet. The check-ins state is lifted to Home so the overview strip and this sheet share
+ * one subscription — one `GET /check-ins`, one outbox.
+ */
+export function RoutineDetail({
+  routine,
+  checkins,
+}: {
+  readonly routine: RoutineResponse['data'];
+  readonly checkins: Checkins;
+}) {
+  const { summary, pending_sync, record } = checkins;
+  const [completion, setCompletion] = useState<CheckInCompletion | null>(null);
+  const [feel, setFeel] = useState<SkinFeel | null>(null);
+  const [saved, setSaved] = useState(false);
+
+  const save = () => {
+    if (completion === null) return;
+    void record(completion, feel).then(() => setSaved(true));
+  };
+
+  const progress =
+    summary !== null && summary.total_check_ins > 0
+      ? Math.min(1, summary.streak_days / Math.max(summary.total_check_ins, 1))
+      : 0;
+
+  return (
+    <div>
       <ol className="routine-steps">
         {routine.routine.steps.map((step) => (
           <li key={step.id} className="card routine-step">
@@ -59,22 +114,16 @@ export function RoutineCard({ routine }: { readonly routine: RoutineResponse['da
         ))}
       </ol>
 
-      <details className="panel excluded">
-        <summary>Why these steps</summary>
-        <ul className="why-list">
-          {routine.routine.steps.map((step) => (
-            <li key={step.id} className="muted small">
-              <strong>{step.title}:</strong> {step.why} ({step.inputs.join(', ')})
-            </li>
-          ))}
-        </ul>
-      </details>
-
       <div className="card checkin">
         <div className="checkin-head">
           <CalendarCheck2 size={18} aria-hidden="true" />
           <h3>This week</h3>
         </div>
+        {summary !== null && summary.total_check_ins > 0 && (
+          <div className="progress-line" role="img" aria-label={`Streak ${summary.streak_days} weeks`}>
+            <span style={{ width: `${Math.round(progress * 100)}%` }} />
+          </div>
+        )}
         {summary !== null && summary.checked_in_today ? (
           <motion.p className="muted" {...verdictEnter}>
             <Check size={14} aria-hidden="true" /> Logged for today
@@ -128,13 +177,12 @@ export function RoutineCard({ routine }: { readonly routine: RoutineResponse['da
               `Before: ${summary.previous.completion.replace(/_/g, ' ')}${summary.previous.feel !== null ? `, feeling ${summary.previous.feel.replace(/_/g, ' ')}` : ''}.`}
           </p>
         )}
-        <p className="muted small">{routine.disclaimer}</p>
         {pending_sync && (
           <p className="muted small sync-note">Saved on this phone, will sync.</p>
         )}
       </div>
 
       <p className="muted small">{routine.disclaimer}</p>
-    </section>
+    </div>
   );
 }
