@@ -1145,7 +1145,39 @@ dd {
 
 /* Tip ribbon: one rotating tip in a distinct card (was: a strip of three). */
 .tip-ribbon {
-  border-left: 4px solid var(--accent);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
+}
+.tip-ribbon::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  width: 11rem;
+  height: 11rem;
+  right: -3.5rem;
+  bottom: -4.5rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  pointer-events: none;
+}
+.tip-ribbon::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  width: 7.5rem;
+  height: 7.5rem;
+  right: 1.5rem;
+  bottom: -3.5rem;
+  border-radius: 50%;
+  border: 1.5rem solid color-mix(in srgb, var(--accent) 16%, transparent);
+  pointer-events: none;
+}
+.tip-ribbon > * {
+  position: relative;
+  z-index: 1;
 }
 .tip-ribbon-top {
   display: flex;
