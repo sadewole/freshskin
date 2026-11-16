@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Lightbulb, Pin, RefreshCw } from 'lucide-react';
+import { Lightbulb, RefreshCw } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { RoutineResponse } from '../api/types';
 import { stepTransition, stepVariants } from '../ui/motion';
@@ -63,7 +63,7 @@ export function TipsStrip({ tips }: { readonly tips: RoutineResponse['data']['ti
         >
           <article className="card tip-ribbon">
             <p className="tip-pin" aria-hidden="true">
-              <Pin size={18} aria-hidden="true" />
+              📌
             </p>
             <div className="tip-ribbon-top">
               <p className="tip-mark" aria-hidden="true">
