@@ -1,0 +1,58 @@
+---
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+
+// SEO stub route (see docs/design/ui-workflow.md): public ingredient pages,
+// each ending in the app CTA. Static paths only — no server at runtime.
+export function getStaticPaths() {
+  return [{ params: { slug: 'glycerin' } }, { params: { slug: 'shea-butter' } }];
+}
+
+const entries: Record<string, { name: string; verdict: string; body: string[] }> = {
+  glycerin: {
+    name: 'Glycerin',
+    verdict: 'Draws in moisture',
+    body: [
+      'Glycerin is a humectant: it pulls water toward the outer layer of skin, which is why it shows up in so many creams for dry skin.',
+      'It suits most skin, including sensitive skin. In very dry air it works best sealed under a cream or oil, so the moisture it draws has somewhere to stay.',
+    ],
+  },
+  'shea-butter': {
+    name: 'Shea butter',
+    verdict: 'Supports the barrier',
+    body: [
+      'Shea butter is an emollient fat that softens skin and helps slow water loss from the surface.',
+      'It suits dry skin well. If your skin is prone to clogged pores, lighter layers tend to work better — the scan can tell you which side you fall on.',
+    ],
+  },
+};
+
+const { slug } = Astro.params;
+const entry = entries[slug ?? ''] ?? entries.glycerin;
+
+const title = `${entry.name} — what it does for your skin | FreshSkin`;
+const description = `${entry.name}: ${entry.verdict.toLowerCase()}. Plain-language ingredient notes from FreshSkin, with reasons you can check.`;
+---
+
+<Base title={title} description={description}>
+  <Header />
+  <main id="main">
+    <section class="sec">
+      <div class="wrap">
+        <span class="kicker">Ingredient notes</span>
+        <h1 class="h2">{entry.name}</h1>
+        <p class="lede">{entry.verdict}.</p>
+        {entry.body.map((p) => <p>{p}</p>)}
+        <p>
+          <a class="pill" href="/#demo">Scan a label with this in it</a>
+        </p>
+        <p class="demo__note">
+          General skincare information, not medical advice. If something is
+          painful, spreading, or not healing, please see a doctor.
+        </p>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>

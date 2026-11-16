@@ -1,0 +1,49 @@
+---
+const steps = [
+  {
+    n: '1',
+    tone: 'blush',
+    title: 'Snap',
+    body: 'One photo in daylight. We check the light, the framing and how much skin we can see before we read anything.',
+  },
+  {
+    n: '2',
+    tone: 'green',
+    title: 'Save',
+    body: 'Your readings settle into a profile you can correct. If we got your skin wrong, you tell us, and it changes.',
+  },
+  {
+    n: '3',
+    tone: 'sand',
+    title: 'Match',
+    body: 'You get creams and scents that fit, each with the reason it fits and the ingredient behind it.',
+  },
+];
+---
+
+<section class="sec" id="how">
+  <div class="wrap">
+    <div class="story reveal">
+      <div>
+        <h2 class="display">Three steps, and you can see the working.</h2>
+        <span class="story__caption">How it works</span>
+      </div>
+      <p class="story__statement">
+        No black box. Every reading carries how sure we are of it, and every
+        recommendation carries the ingredient that caused it.
+      </p>
+    </div>
+
+    <div class="steps-grid">
+      {
+        steps.map((s) => (
+          <article class={`card card--${s.tone} reveal`}>
+            <span class="step__num">{s.n}</span>
+            <h3 class="h3">{s.title}</h3>
+            <p>{s.body}</p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>

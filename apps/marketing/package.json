@@ -3,10 +3,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "echo 'marketing scaffold pending (Phase 3)'",
-    "build": "echo 'marketing scaffold pending (Phase 3)'"
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "typecheck": "astro check"
   },
   "dependencies": {
-    "@freshskin/ui": "workspace:*"
+    "@freshskin/ui": "workspace:*",
+    "astro": "^7.4.12"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "typescript": "^5.7.2"
   }
 }

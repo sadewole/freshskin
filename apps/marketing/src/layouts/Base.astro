@@ -1,0 +1,74 @@
+---
+import '@freshskin/ui/tokens.css';
+import '../styles/marketing.css';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+
+// The marketing origin is stricter than the app's: no third-party anything.
+// Emitted only in the production build — Astro's dev client needs inline scripts.
+const csp = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self'",
+  "img-src 'self' data:",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join('; ');
+
+// frame-ancestors cannot be delivered via <meta>; it is enforced from the
+// host's response headers (see public/_headers for compatible hosts).
+const cspMeta = csp.replace(/frame-ancestors[^;]*;?\s*/, '');
+
+const org = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'FreshSkin',
+  url: 'https://freshskin.com',
+  description:
+    'Skincare and scent recommendations with reasons you can check. Photograph your skin, scan any label.',
+};
+---
+
+<!doctype html>
+<html lang="en-NG">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#fbf5ec" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#211411" media="(prefers-color-scheme: dark)" />
+    {import.meta.env.PROD && <meta http-equiv="Content-Security-Policy" content={cspMeta} />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="FreshSkin" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL('/og.png', Astro.site).href} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preload" href="/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(org)} />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="frame">
+      <slot />
+    </div>
+    <!-- External on purpose: inlining would force a CSP hash or 'unsafe-inline'. -->
+    <script is:inline src="/scripts/site.js" defer></script>
+  </body>
+</html>
