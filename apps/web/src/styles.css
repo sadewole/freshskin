@@ -1154,7 +1154,7 @@ and an oversize quote watermark. */
   background: color-mix(in srgb, var(--accent) 9%, var(--surface));
   border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
 }
-.tip-pin {
+.tip-ribbon > .tip-pin {
   position: absolute;
   z-index: 1;
   top: 0.45rem;
