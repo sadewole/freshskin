@@ -1154,30 +1154,38 @@ and an oversize quote watermark. */
   background: color-mix(in srgb, var(--accent) 9%, var(--surface));
   border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
 }
+.tip-pin {
+  position: absolute;
+  z-index: 1;
+  top: 0.45rem;
+  left: 50%;
+  translate: -50% 0;
+  margin: 0;
+  color: var(--accent);
+  pointer-events: none;
+}
 .tip-ribbon::before {
   content: "";
   position: absolute;
-  z-index: 1;
-  top: 0.55rem;
-  left: 50%;
-  translate: -50% 0;
-  width: 0.7rem;
-  height: 0.7rem;
+  z-index: 0;
+  width: 7.5rem;
+  height: 7.5rem;
+  right: 1.5rem;
+  bottom: -3.5rem;
   border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 1px 2px rgb(46 27 20 / 0.35);
+  border: 1.5rem solid color-mix(in srgb, var(--accent) 16%, transparent);
   pointer-events: none;
 }
 .tip-ribbon::after {
-  content: "\201C";
+  content: "";
   position: absolute;
   z-index: 0;
-  right: 0.25rem;
-  bottom: -2.5rem;
-  font-size: 9rem;
-  line-height: 1;
-  font-family: Georgia, "Times New Roman", serif;
-  color: var(--ghost-ink);
+  width: 11rem;
+  height: 11rem;
+  right: -3.5rem;
+  bottom: -4.5rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
   pointer-events: none;
 }
 .tip-ribbon > * {
