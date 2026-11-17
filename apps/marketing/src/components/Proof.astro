@@ -1,49 +1,70 @@
 ---
-// No users to quote yet, so no names, stars, or carousel: a static trio of the
-// existing sample imagery plus the illustrative readout, clearly labelled.
+// No users to quote yet, so no names, stars, or carousel: a sample readout plus
+// the existing sample imagery, clearly labelled.
+const readings = [
+  { label: 'Dryness', value: 'moderate', conf: '0.81' },
+  { label: 'Texture', value: 'uneven', conf: '0.74' },
+  { label: 'Evenness', value: '68 / 100', conf: '0.77' },
+];
 ---
 
 <section class="sec proof" id="proof">
-<div class="wrap">
-<div class="story reveal">
-<div>
-<h2 class="display">Proof is in the progress.</h2>
-<span class="story__caption">What a scan shows</span>
-</div>
-<p class="story__statement">
-The same three readings, every week: what the photo shows, how sure we are
-of it, and the reason behind the match.
-</p>
-</div>
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <span class="eyebrow"><b>07</b> What a scan shows</span>
+        <h2 class="display">Proof is in<br />the progress.</h2>
+      </div>
+      <p class="sec-head__lede">
+        The same three readings, every week: what the photo shows, how sure we are of it,
+        and the reason behind the match.
+      </p>
+    </div>
 
-<div class="proof__trio reveal" role="img" aria-label="Three sample scan reference images showing cream texture on skin">
-<img
-src="/images/tone-field.webp"
-width="1200"
-height="675"
-alt=""
-loading="lazy"
-decoding="async"
-/>
-<img
-src="/images/cream-jar.webp"
-width="900"
-height="900"
-alt=""
-loading="lazy"
-decoding="async"
-/>
-<img
-src="/images/fragrance-vial.webp"
-width="900"
-height="900"
-alt=""
-loading="lazy"
-decoding="async"
-/>
-</div>
-<p class="strip-caption reveal">
-Sample imagery, not a result. Every scan carries its confidence with it.
-</p>
-</div>
+    <div class="proof__grid">
+      <div class="proof__readout reveal">
+        <span class="proof__k">Sample readout</span>
+        <ul class="readout">
+          {
+            readings.map((r) => (
+              <li>
+                <b>{r.label}</b>
+                <span>{r.value} · {r.conf}</span>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="note">
+          Sample imagery, not a result. Every scan carries its confidence with it.
+        </p>
+      </div>
+
+      <div class="proof__trio reveal">
+        <img
+          src="/images/tone-field.webp"
+          width="1200"
+          height="675"
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+        <img
+          src="/images/cream-jar.webp"
+          width="900"
+          height="900"
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+        <img
+          src="/images/fragrance-vial.webp"
+          width="900"
+          height="900"
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
+  </div>
 </section>

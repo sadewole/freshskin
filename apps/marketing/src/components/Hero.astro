@@ -5,50 +5,77 @@ const app = 'https://app.freshskin.com/?utm_source=freshskin.com&utm_medium=refe
 ---
 
 <section class="hero ruled">
-<div class="wrap hero__head reveal">
-<span class="kicker kicker--accent">Skin and scent, matched to you</span>
-<h1 class="display">Skincare and scent that actually fits you.</h1>
-<p class="lede hero__lede">
-Photograph your skin, scan any label, and get recommendations with reasons you
-can check.
-</p>
-<div class="hero__actions hero__actions--center">
-<a class="pill" href={app}>
-Scan my skin
-<i aria-hidden="true">
-<svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-<path
-d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"
-stroke="currentColor"
-stroke-width="1.6"
-stroke-linecap="round"
-stroke-linejoin="round"
-/>
-</svg>
-</i>
-</a>
-</div>
-</div>
+  <div class="wrap hero__head reveal">
+    <span class="eyebrow eyebrow--center">Skin and scent, matched to you</span>
+    <h1 class="display hero__title">
+      Skincare and scent that <em>actually fit you.</em>
+    </h1>
+    <p class="lede hero__lede">
+      Photograph your skin, scan any label, and get recommendations with reasons you
+      can check.
+    </p>
+    <div class="hero__actions">
+      <a class="pill" href={app}>
+        Scan my skin
+        <i aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </i>
+      </a>
+      <a class="link-arrow" href="#how">
+        See how it works
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </a>
+    </div>
+  </div>
 
-<div class="wrap hero__in">
-<div class="hero__side reveal">
-<b>Free at launch</b>
-No subscription, and no paywall on safety advice.
-</div>
+  <div class="wrap hero__stage reveal">
+    <aside class="floatcard floatcard--left">
+      <span class="floatcard__dot" aria-hidden="true"></span>
+      <b>Free at launch</b>
+      <p>No subscription, and no paywall on safety advice.</p>
+    </aside>
 
-<div class="hero__demo">
-<ScanDemo />
-</div>
+    <div class="phone">
+      <div class="phone__chrome" aria-hidden="true"><span></span></div>
+      <ScanDemo />
+    </div>
 
-<div class="hero__proof reveal">
-<div>
-<b>Deleted in 24 hours</b>
-Photos are removed unless you choose to keep them.
-</div>
-<div>
-<b>See how it works</b>
-<a href="#how">Three steps, each with its reason.</a>
-</div>
-</div>
-</div>
+    <aside class="floatcard floatcard--right">
+      <span class="floatcard__dot floatcard__dot--good" aria-hidden="true"></span>
+      <b>Deleted in 24 hours</b>
+      <p>Photos are removed unless you choose to keep them.</p>
+    </aside>
+  </div>
+
+  <div class="hero__band reveal">
+    <img
+      src="/images/tone-field.webp"
+      width="1200"
+      height="675"
+      alt="A soft neutral reference gradient standing in for a skin photograph."
+      loading="eager"
+      decoding="async"
+    />
+    <div class="hero__band-tags">
+      <span class="tagchip">Sample reference</span>
+      <span class="tagchip">Daylight only</span>
+      <span class="tagchip">Not a diagnosis</span>
+    </div>
+  </div>
 </section>

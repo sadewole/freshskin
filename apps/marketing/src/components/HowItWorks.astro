@@ -1,36 +1,39 @@
 ---
 const steps = [
   {
-    n: '1',
+    n: '01',
     tone: 'blush',
     title: 'Snap',
     body: 'One photo in daylight. We check the light, the framing and how much skin we can see before we read anything.',
+    note: 'You see the confidence before the verdict.',
   },
   {
-    n: '2',
+    n: '02',
     tone: 'green',
     title: 'Save',
     body: 'Your readings settle into a profile you can correct. If we got your skin wrong, you tell us, and it changes.',
+    note: 'Your correction changes the next match.',
   },
   {
-    n: '3',
+    n: '03',
     tone: 'sand',
     title: 'Match',
     body: 'You get creams and scents that fit, each with the reason it fits and the ingredient behind it.',
+    note: 'Every result can be rated or disputed.',
   },
 ];
 ---
 
-<section class="sec" id="how">
+<section class="sec how" id="how">
   <div class="wrap">
-    <div class="story reveal">
+    <div class="sec-head reveal">
       <div>
-        <h2 class="display">Three steps, and you can see the working.</h2>
-        <span class="story__caption">How it works</span>
+        <span class="eyebrow"><b>02</b> How it works</span>
+        <h2 class="display">Three steps, and you<br />can see the working.</h2>
       </div>
-      <p class="story__statement">
-        No black box. Every reading carries how sure we are of it, and every
-        recommendation carries the ingredient that caused it.
+      <p class="sec-head__lede">
+        No black box. Every reading carries how sure we are of it, and every recommendation
+        carries the ingredient that caused it.
       </p>
     </div>
 
@@ -38,9 +41,10 @@ const steps = [
       {
         steps.map((s) => (
           <article class={`card card--${s.tone} reveal`}>
-            <span class="step__num">{s.n}</span>
+            <span class="card__num">{s.n}</span>
             <h3 class="h3">{s.title}</h3>
             <p>{s.body}</p>
+            <span class="card__note">{s.note}</span>
           </article>
         ))
       }

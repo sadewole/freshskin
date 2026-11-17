@@ -1,78 +1,79 @@
 ---
 const ingredients = [
-{ name: 'Shea butter', note: 'supports the barrier', flag: false },
-{ name: 'Glycerin', note: 'draws in moisture', flag: false },
-{ name: 'Alcohol denat.', note: 'may dry your skin', flag: true },
+  { name: 'Shea butter', note: 'supports the barrier', flag: false },
+  { name: 'Glycerin', note: 'draws in moisture', flag: false },
+  { name: 'Alcohol denat.', note: 'may dry your skin', flag: true },
 ];
 ---
 
-<section class="sec ruled" id="labels">
-<div class="wrap">
-<div class="story reveal">
-<div>
-<span class="kicker kicker--accent">Product analysis</span>
-<h2 class="display">Point at any label. Know in seconds.</h2>
-</div>
-<p class="story__statement">
-We read the ingredients you sent us and say what each one does for your skin —
-or against it. No verdict without the ingredient that caused it.
-</p>
-</div>
+<section class="sec labels" id="labels">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <span class="eyebrow"><b>04</b> Product check</span>
+        <h2 class="display">Point at any label.<br />Know in seconds.</h2>
+      </div>
+      <p class="sec-head__lede">
+        We read the ingredients you sent us and say what each one does for your skin — or
+        against it. No verdict without the ingredient that caused it.
+      </p>
+    </div>
 
-<div class="split">
-<div class="stage reveal">
-<img
-src="/images/cream-jar.webp"
-width="900"
-height="900"
-alt="A plain frosted cream jar on a pale ceramic plate in afternoon light."
-loading="lazy"
-decoding="async"
-/>
-<span class="tagchip tagchip--a"><i></i> No fragrance</span>
-<span class="tagchip tagchip--b"><i></i> Barrier support</span>
-</div>
+    <div class="split">
+      <div class="stage reveal">
+        <img
+          src="/images/cream-jar.webp"
+          width="900"
+          height="900"
+          alt="A plain frosted cream jar on a pale ceramic plate in afternoon light."
+          loading="lazy"
+          decoding="async"
+        />
+        <span class="tagchip tagchip--a"><i></i> No fragrance</span>
+        <span class="tagchip tagchip--b"><i></i> Barrier support</span>
+        <span class="stage__badge">90% of label read</span>
+      </div>
 
-<div class="reveal">
-<ul class="ingredients">
-{
-ingredients.map((i) => (
-<li class={i.flag ? 'flag' : ''}>
-<b>{i.name}</b>
-<span>{i.note}</span>
-</li>
-))
-}
-</ul>
+      <div class="reveal">
+        <ul class="ingredients">
+          {
+            ingredients.map((i) => (
+              <li class={i.flag ? 'flag' : ''}>
+                <b>{i.name}</b>
+                <span>{i.note}</span>
+              </li>
+            ))
+          }
+        </ul>
 
-<div class="match match--float">
-<div class="match__top">
-<div class="match__thumb" aria-hidden="true"></div>
-<div>
-<div class="match__name">Fragrance-free barrier cream</div>
-<div class="match__meta">Good match · 0.82 confidence</div>
-</div>
-</div>
-<p class="match__reason">
-<svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
-<path
-d="m3 8.5 3 3 7-7"
-stroke="currentColor"
-stroke-width="1.8"
-stroke-linecap="round"
-stroke-linejoin="round"
-/>
-</svg>
-Ceramides and glycerin, no fragrance — that suits the dryness and texture
-the scan found.
-</p>
-</div>
+        <div class="match">
+          <div class="match__top">
+            <div class="match__thumb" aria-hidden="true"></div>
+            <div>
+              <div class="match__name">Fragrance-free barrier cream</div>
+              <div class="match__meta">Good match · 0.82 confidence</div>
+            </div>
+          </div>
+          <p class="match__reason">
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path
+                d="m3 8.5 3 3 7-7"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Ceramides and glycerin, no fragrance — that suits the dryness and texture
+            the scan found.
+          </p>
+        </div>
 
-<p class="demo__note">
-We only flag an ingredient when we have read enough of the label. Below 60% of
-ingredients matched, we ask for a clearer photo instead of guessing.
-</p>
-</div>
-</div>
-</div>
+        <p class="note">
+          We only flag an ingredient when we have read enough of the label. Below 60% of
+          ingredients matched, we ask for a clearer photo instead of guessing.
+        </p>
+      </div>
+    </div>
+  </div>
 </section>

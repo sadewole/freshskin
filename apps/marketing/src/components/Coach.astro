@@ -2,53 +2,61 @@
 const app = 'https://app.freshskin.com/?utm_source=freshskin.com&utm_medium=referral&utm_campaign=coach';
 ---
 
-<section class="sec ruled" id="coach">
-<div class="wrap">
-<div class="story reveal">
-<div>
-<span class="kicker kicker--accent">AI assistant</span>
-<h2 class="display">Chat with your virtual skin coach.</h2>
-</div>
-<p class="story__statement">
-A reminder only when it helps, and a plan that reacts to your week instead of
-scolding you for it.
-</p>
-</div>
+<section class="sec coach" id="coach">
+  <span class="ghost" data-word="Coach" aria-hidden="true"></span>
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <span class="eyebrow"><b>06</b> AI assistant</span>
+        <h2 class="display">Chat with your<br />skin coach.</h2>
+      </div>
+      <p class="sec-head__lede">
+        A reminder only when it helps, and a plan that reacts to your week instead of
+        scolding you for it.
+      </p>
+    </div>
 
-<div class="split split--coach">
-<div class="reveal">
-<ul class="coach-points">
-<li>
-<b>A weekly check-in</b>
-<span>Seven days is enough to see whether something is working.</span>
-</li>
-<li>
-<b>It adjusts</b>
-<span>A week that goes badly changes the plan. It does not reset you.</span>
-</li>
-<li>
-<b>No streaks</b>
-<span>Nothing to break, so nothing to feel bad about.</span>
-</li>
-</ul>
-<a class="pill pill--ghost" href={app}>Try the coach</a>
-</div>
+    <div class="split split--coach">
+      <div class="reveal">
+        <ul class="coach-points">
+          <li>
+            <b>A weekly check-in</b>
+            <span>Seven days is enough to see whether something is working.</span>
+          </li>
+          <li>
+            <b>It adjusts</b>
+            <span>A week that goes badly changes the plan. It does not reset you.</span>
+          </li>
+          <li>
+            <b>No streaks</b>
+            <span>Nothing to break, so nothing to feel bad about.</span>
+          </li>
+        </ul>
+        <a class="pill pill--ghost" href={app}>Try the coach</a>
+      </div>
 
-<div class="coach-chat reveal" role="img" aria-label="Sample coach conversation showing a weekly check-in reply">
-<div class="coach-chat__bubble coach-chat__bubble--them">
-<p>How is the barrier cream feeling this week?</p>
-</div>
-<div class="coach-chat__bubble coach-chat__bubble--me">
-<p>A little tight after washing. Better by the evening.</p>
-</div>
-<div class="coach-chat__bubble coach-chat__bubble--them">
-<p>That sounds like the cleanser, not the cream. Shall we try a gentler wash for seven days?</p>
-</div>
-<div class="coach-chat__input" aria-hidden="true">
-<span>Write your check-in…</span>
-<span class="coach-chat__send">↑</span>
-</div>
-</div>
-</div>
-</div>
+      <div class="coach-chat reveal" role="img" aria-label="Sample coach conversation showing a weekly check-in reply">
+        <div class="coach-chat__head">
+          <span class="coach-chat__avatar" aria-hidden="true"></span>
+          <div>
+            <b>FreshSkin coach</b>
+            <span>Weekly check-in</span>
+          </div>
+        </div>
+        <div class="coach-chat__bubble coach-chat__bubble--them">
+          <p>How is the barrier cream feeling this week?</p>
+        </div>
+        <div class="coach-chat__bubble coach-chat__bubble--me">
+          <p>A little tight after washing. Better by the evening.</p>
+        </div>
+        <div class="coach-chat__bubble coach-chat__bubble--them">
+          <p>That sounds like the cleanser, not the cream. Shall we try a gentler wash for seven days?</p>
+        </div>
+        <div class="coach-chat__input" aria-hidden="true">
+          <span>Write your check-in…</span>
+          <span class="coach-chat__send">↑</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
