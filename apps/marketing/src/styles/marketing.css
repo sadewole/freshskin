@@ -10,15 +10,32 @@
 
 /* ------------------------------------------------------------------ fonts --
  * Self-hosted woff2 (SIL OFL). A Google Fonts <link> would violate the shipped
- * style-src 'self' CSP, and both files are subset to latin by Google already.
+ * style-src 'self' CSP. Sofia Sans Semi Condensed is the marketing body face;
+ * the shared --font token still serves the app, so override it here only.
  */
 
+:root {
+  --font: 'Sofia Sans Semi Condensed', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
 @font-face {
-  font-family: 'DM Sans';
-  src: url('/fonts/dm-sans-latin.woff2') format('woff2');
+  font-family: 'Sofia Sans Semi Condensed';
+  src: url('/fonts/sofia-sans-semi-condensed-latin.woff2') format('woff2');
   font-weight: 100 1000;
   font-style: normal;
   font-display: swap;
+}
+
+/* Latin-ext only supplies ₦ (U+20A6), so it loads only where that glyph appears. */
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  src: url('/fonts/sofia-sans-semi-condensed-latin-ext.woff2') format('woff2');
+  font-weight: 100 1000;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113,
+    U+2C60-2C7F, U+A720-A7FF;
 }
 
 @font-face {
@@ -99,7 +116,7 @@ a {
 .wrap {
   max-width: 1240px;
   margin: 0 auto;
-  padding-inline: clamp(20px, 5vw, 56px);
+  padding-inline: clamp(24px, 6vw, 64px);
 }
 
 .sec {
@@ -374,7 +391,7 @@ a {
   min-height: 72px;
   max-width: 1400px;
   margin: 0 auto;
-  padding-inline: clamp(20px, 5vw, 56px);
+  padding-inline: clamp(24px, 6vw, 64px);
 }
 
 .masthead__in .brand {
@@ -512,14 +529,149 @@ a {
   margin-bottom: var(--space-5);
 }
 
-.hero__title em {
+.hero__title em,
+.hero__word--accent {
   font-style: normal;
   color: var(--accent);
+}
+
+.hero__copy {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hero__word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.hero__char {
+  display: inline-block;
+  transform-origin: 50% 72%;
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    font-weight var(--dur-med) var(--ease-out);
+}
+
+.hero__char.is-near {
+  transform: scale(1.13) translateY(-0.02em);
+  font-weight: 800;
+}
+
+.hero__char--lede.is-near {
+  transform: scale(1.07) translateY(-0.01em);
+  font-weight: 750;
+}
+
+/* Drops of water, built from token colours so they inherit both themes. Three
+ * sizes on desktop, one on phones; JS drifts and drags them. Reduced motion
+ * parks them still, and without JS they never appear. */
+.hero__bubble {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 33% 27%,
+      color-mix(in srgb, var(--surface) 88%, transparent) 0 14%,
+      transparent 44%
+    ),
+    radial-gradient(
+      circle at 52% 58%,
+      color-mix(in srgb, var(--rose) 64%, transparent),
+      color-mix(in srgb, var(--berry) 20%, transparent) 74%
+    );
+  box-shadow:
+    inset 7px 9px 18px color-mix(in srgb, var(--surface) 62%, transparent),
+    inset -8px -12px 20px color-mix(in srgb, var(--berry) 26%, transparent),
+    0 12px 30px -14px color-mix(in srgb, var(--berry) 34%, transparent);
+  opacity: 0;
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transform: translate3d(-50%, -50%, 0);
+  transition: opacity var(--dur-med) var(--ease-out);
+}
+
+.hero__bubble--main {
+  width: clamp(74px, 11vw, 148px);
+}
+
+.hero__bubble--small {
+  width: clamp(44px, 6vw, 82px);
+}
+
+.hero__bubble--wide {
+  width: clamp(58px, 8vw, 112px);
+}
+
+.hero__bubble.is-dragged {
+  cursor: grabbing;
+}
+
+.hero__copy[data-ready] .hero__bubble--main {
+  opacity: 0.82;
+}
+
+.hero__copy[data-ready] .hero__bubble--small {
+  opacity: 0.68;
+}
+
+.hero__copy[data-ready] .hero__bubble--wide {
+  opacity: 0.74;
+}
+
+/* Phones keep just the main bubble: less clutter over narrow text. */
+@media (max-width: 719px) {
+  .hero__bubble--small,
+  .hero__bubble--wide {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__char,
+  .hero__bubble {
+    transition: none;
+  }
 }
 
 .hero__lede {
   margin-inline: auto;
   max-width: 52ch;
+}
+
+/* Narrow screens: one notch down across the reading text, and the display line
+ * follows it, so the headline does not crowd the lede on a 390px phone. */
+@media (max-width: 719px) {
+  body {
+    font-size: 17px;
+  }
+
+  .lede {
+    font-size: 16px;
+  }
+
+  .hero__title {
+    font-size: clamp(40px, 11vw, 46px);
+  }
 }
 
 .hero__actions {
@@ -531,206 +683,196 @@ a {
   margin-top: var(--space-6);
 }
 
-/* The stage: micro-cards flanking a phone, the reference's strongest move. */
-.hero__stage {
+/* The portrait: one lit face with the AI's readings drawn onto it. Same move as
+ * the reference; the readings are the sample three the Proof section shows. */
+.hero__portrait {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: clamp(20px, 4vw, 56px);
-  padding-block: clamp(40px, 6vw, 72px) clamp(32px, 4vw, 48px);
+  margin-top: clamp(32px, 4.5vw, 56px);
+  /* The card is also a .wrap, so its gutter has to go: the photo runs to the
+   * card's edge, and the pointer percentages are measured against the photo. */
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line);
+  background: var(--surface);
 }
 
-.hero__stage::before {
-  content: '';
+/* Photo and readings share one frame, so the pointer percentages are measured
+ * against the photo and not against the card's wordmark band below it. */
+.hero__frame {
+  position: relative;
+}
+
+/* The photo's white studio ground is multiplied into the card, so it sits in the
+ * cream rather than on top of it. */
+.hero__portrait img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: clamp(320px, 44vw, 560px);
+  object-fit: cover;
+  object-position: 74% 50%;
+  mix-blend-mode: multiply;
+}
+
+/* The wordmark sits inside the photo, on the face's own level but at the bottom
+ * of the frame, and the photo multiplies over it: the word reads through the
+ * studio ground and is swallowed by the face. That occlusion is the device, so
+ * the word is deliberately not kept whole. */
+.hero__mark {
+  left: -0.04em;
+  bottom: -0.06em;
+  font-size: clamp(64px, 15vw, 190px);
+  line-height: 0.78;
+  color: color-mix(in srgb, var(--ink) 11%, transparent);
+}
+
+/* Dark ground: multiply would crush the photo. */
+@media (prefers-color-scheme: dark) {
+  .hero__portrait img {
+    mix-blend-mode: normal;
+ }
+ .hero__mark {
+ z-index: 2;
+ color: color-mix(in srgb, var(--ink) 76%, var(--surface));
+ mix-blend-mode: darken;
+ }
+}
+
+/* Reads as a report stamp rather than a sticker: a live dot, instrument caps,
+ * and a hairline that matches the chips below it. */
+.hero__sample {
   position: absolute;
-  inset: 8% 12% 0;
-  z-index: -1;
+  top: clamp(14px, 2vw, 24px);
+  right: clamp(14px, 2vw, 24px);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px 7px 12px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-card);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  backdrop-filter: blur(8px);
+}
+
+.hero__sample::before {
+  content: '';
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: radial-gradient(closest-side, var(--blush), transparent 78%);
-  opacity: 0.75;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.hero__pointers {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
   pointer-events: none;
 }
 
-.floatcard {
+/* Lines are drawn in a 0–100 user space and stretched, so the stroke stays 1px
+ * and the dot stays round at any frame size. */
+.hero__lines {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  max-width: 230px;
-  padding: 20px;
-  border-radius: 20px;
+  height: 100%;
+  overflow: visible;
+}
+
+.hero__lines line {
+  stroke: color-mix(in srgb, var(--ink) 34%, transparent);
+  stroke-width: 1;
+}
+
+.hero__lines .hero__dot {
+  stroke: var(--accent);
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+
+/* Chip sits with its right edge on the line's start point, so label and line
+ * never come apart. */
+.pointer {
+  position: absolute;
+  top: var(--y);
+  right: calc(100% - var(--x));
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 6px 13px;
+  border-radius: var(--radius-pill);
   background: var(--surface);
   border: 1px solid var(--line);
   box-shadow: var(--shadow-card);
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 12.5px;
   color: var(--ink-soft);
+  white-space: nowrap;
+  transform: translateY(-50%);
 }
 
-.floatcard--left {
-  justify-self: end;
-}
-
-.floatcard--right {
-  justify-self: start;
-}
-
-.floatcard b {
-  display: block;
-  font-size: 14.5px;
+.pointer b {
   font-weight: 600;
   color: var(--ink);
-  margin-bottom: 4px;
 }
 
-.floatcard__dot {
-  display: block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  margin-bottom: 12px;
+.pointer--a {
+  --x: 36%;
+  --y: 26%;
 }
 
-.floatcard__dot--good {
-  background: var(--good);
+.pointer--b {
+  --x: 46%;
+  --y: 52%;
 }
 
-/* Phone frame: the demo becomes an app screen instead of a floating card. */
-.phone {
-  width: min(360px, 100%);
-  justify-self: center;
-  padding: 10px;
-  border-radius: 46px;
-  background: var(--ink-brand);
-  box-shadow: var(--shadow-pop);
-  position: relative;
-}
-
-.phone__chrome {
-  display: grid;
-  place-items: center;
-  height: 22px;
-}
-
-.phone__chrome span {
-  width: 74px;
-  height: 6px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--cream) 26%, transparent);
-}
-
-.phone .demo {
-  border: 0;
-  border-radius: 38px;
-  background: var(--surface);
-  box-shadow: none;
-  padding: 16px 16px 20px;
-}
-
-.phone .demo__title,
-.phone .demo__count,
-.phone .demo .demo__note {
-  color: var(--muted);
-}
-
-.phone .step {
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 16px;
-}
-
-.phone .step__title {
-  font-size: 18px;
-}
-
-.phone .step p {
-  font-size: 14px;
-}
-
-.phone .demo__foot .pill {
-  width: 100%;
-  justify-content: space-between;
-  min-height: 46px;
-  font-size: 14.5px;
-  padding-left: 20px;
-}
-
-.phone .demo__foot .pill i {
-  width: 30px;
-  height: 30px;
-}
-
-/* The band: a wide atmospheric strip under the stage, the reference's
- * landscape moment, built from our own sample reference image. */
-.hero__band {
-  position: relative;
-  z-index: 1;
-  height: clamp(150px, 22vw, 280px);
-  overflow: hidden;
-  border-block: 1px solid var(--rule);
-}
-
-.hero__band img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  mask-image: linear-gradient(to bottom, transparent, black 22%, black 78%, transparent);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 22%, black 78%, transparent);
-}
-
-.hero__band-tags {
-  position: absolute;
-  left: 50%;
-  bottom: clamp(16px, 3vw, 28px);
-  transform: translateX(-50%);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  width: max-content;
-  max-width: calc(100% - 32px);
+.pointer--c {
+  --x: 34%;
+  --y: 84%;
 }
 
 @media (max-width: 899px) {
-  .hero__stage {
-    grid-template-columns: 1fr;
-    gap: var(--space-5);
-  }
-
-  .floatcard {
-    max-width: none;
-    justify-self: stretch;
-  }
-
-  .hero__stage .floatcard--left {
-    order: 2;
-  }
-
-  .hero__stage .phone {
-    order: 1;
-  }
-
-  .hero__stage .floatcard--right {
-    order: 3;
-  }
-
-  .hero__stage {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .hero__stage .phone {
-    grid-column: 1 / -1;
+  .pointer {
+    font-size: 11.5px;
+    padding: 5px 11px;
   }
 }
 
-@media (max-width: 599px) {
-  .hero__stage {
-    grid-template-columns: 1fr;
+/* Narrow frames keep the lines, but the chips go back to one line and drop a
+ * size: stacked, three of them ate the left third of the photo. */
+@media (max-width: 719px) {
+  .hero__portrait img {
+    height: clamp(300px, 78vw, 420px);
   }
 
-  .hero__band {
-    height: 150px;
+  .pointer {
+    gap: 5px;
+    padding: 4px 9px;
+    font-size: 9.5px;
+  }
+
+  .pointer b {
+    font-size: 9.5px;
+  }
+
+  .pointer span {
+    font-size: 9px;
+  }
+
+  .hero__sample {
+    font-size: 9.5px;
+    gap: 6px;
+    padding: 6px 11px 6px 10px;
   }
 }
 
@@ -1983,24 +2125,6 @@ a {
 }
 
 /* -------------------------------------------------------------------- misc */
-
-/* Parked above the fold rather than off to the left: an off-canvas left: -9999px
- * gives the document a negative scroll area on some browsers. */
-.skip {
-  position: absolute;
-  left: 0;
-  top: -64px;
-  padding: 12px 20px;
-  background: var(--ink);
-  color: var(--bg);
-  border-radius: 0 0 var(--radius) 0;
-  z-index: 50;
-  transition: top var(--dur-fast) var(--ease-out);
-}
-
-.skip:focus {
-  top: 0;
-}
 
 .sr {
   position: absolute;

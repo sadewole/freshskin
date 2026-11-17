@@ -59,12 +59,18 @@ const org = {
     <meta name="twitter:card" content="summary_large_image" />
 
     <link rel="preload" href="/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link
+      rel="preload"
+      href="/fonts/sofia-sans-semi-condensed-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
     <script type="application/ld+json" set:html={JSON.stringify(org)} />
   </head>
   <body>
-    <a class="skip" href="#main">Skip to content</a>
     <div class="frame">
       <slot />
     </div>
