@@ -1,53 +1,86 @@
 ---
-const steps = [
-  {
-    n: '01',
-    tone: 'blush',
-    title: 'Snap',
-    body: 'One photo in daylight. We check the light, the framing and how much skin we can see before we read anything.',
-    note: 'You see the confidence before the verdict.',
-  },
-  {
-    n: '02',
-    tone: 'green',
-    title: 'Save',
-    body: 'Your readings settle into a profile you can correct. If we got your skin wrong, you tell us, and it changes.',
-    note: 'Your correction changes the next match.',
-  },
-  {
-    n: '03',
-    tone: 'sand',
-    title: 'Match',
-    body: 'You get creams and scents that fit, each with the reason it fits and the ingredient behind it.',
-    note: 'Every result can be rated or disputed.',
-  },
-];
+// HowItWorks section: white-background editorial grid using three brand-asset images.
+// Photos are samples, not results — captions disclose this.
 ---
+<section class="how-it-works" aria-labelledby="wi-title">
+  <span class="ghost how-it-works__ghost" data-word="inputs" aria-hidden="true"></span>
 
-<section class="sec how" id="how">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <div>
-        <span class="eyebrow"><b>02</b> How it works</span>
-        <h2 class="display">Three steps, and you<br />can see the working.</h2>
-      </div>
-      <p class="sec-head__lede">
-        No black box. Every reading carries how sure we are of it, and every recommendation
-        carries the ingredient that caused it.
-      </p>
-    </div>
+    <!-- Top header bar: headline + pill timeline -->
+    <header class="how-it-works__header reveal">
+      <h2 class="how-it-works__headline" id="wi-title">
+        Easy skincare regimen
+      </h2>
 
-    <div class="steps-grid">
-      {
-        steps.map((s) => (
-          <article class={`card card--${s.tone} reveal`}>
-            <span class="card__num">{s.n}</span>
-            <h3 class="h3">{s.title}</h3>
-            <p>{s.body}</p>
-            <span class="card__note">{s.note}</span>
-          </article>
-        ))
-      }
+      <div class="how-it-works__pills reveal">
+        <button type="button" class="pill pill--inactive" aria-pressed="false" data-day="1">Day 1</button>
+        <button type="button" class="pill pill--inactive" aria-pressed="false" data-day="2">2</button>
+        <button type="button" class="pill pill--inactive" aria-pressed="false" data-day="3">3</button>
+        <button type="button" class="pill pill--dot" aria-label="dot 1"></button>
+        <button type="button" class="pill pill--dot" aria-label="dot 2"></button>
+        <button type="button" class="pill pill--dot" aria-label="dot 3"></button>
+        <button type="button" class="pill pill--dot" aria-label="dot 4"></button>
+        <button type="button" class="pill pill--active" aria-pressed="true" data-day="23">Day 23</button>
+        <button type="button" class="pill pill--inactive" aria-pressed="false" data-day="30">30</button>
+      </div>
+    </header>
+
+    <!-- Main asymmetric grid -->
+    <div class="how-it-works__grid reveal">
+      <!-- Left: tall hero image -->
+      <figure class="how-it-works__hero-image">
+        <img
+          src="/images/Woman_posing_with_hand_on_9c207503.jpg"
+          alt="Woman posing with hand on cheek, good light for skin analysis — sample imagery, not a result."
+          width="768"
+          height="1376"
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
+
+      <!-- Right: 2×2 staggered quadrant -->
+      <div class="how-it-works__quadrant">
+        <!-- Top-Left: square cream image -->
+        <figure class="how-it-works__quadrant-tl">
+          <img
+            src="/images/Woman_applying_skincare_cream_be0d0284.jpg"
+            alt="Woman applying facial cream to dewy skin — sample imagery, not a result."
+            width="768"
+            height="1376"
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
+
+        <!-- Top-Right: supporting copy -->
+        <div class="how-it-works__quadrant-tr">
+          <p class="how-it-works__copy">
+            Stay fresh and charming in every weather with full of confidence
+          </p>
+        </div>
+
+        <!-- Bottom-Left: metric + tagline -->
+        <div class="how-it-works__quadrant-bl">
+          <p class="how-it-works__stat">96%</p>
+          <p class="how-it-works__tagline">
+            Purposeful Skincare<br />
+            Crafted with Care.
+          </p>
+        </div>
+
+        <!-- Bottom-Right: offset portrait -->
+        <figure class="how-it-works__quadrant-br">
+          <img
+            src="/images/Woman_applying_facial_moisturizer_d986484d.jpg"
+            alt="Woman with wavy dark hair touching her face/collarbone — sample imagery, not a result."
+            width="768"
+            height="1376"
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
+      </div>
     </div>
   </div>
 </section>

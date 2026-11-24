@@ -1,39 +1,40 @@
 ---
+import TrustRow from './TrustRow.astro';
 ---
 
 <section class="sec" id="story">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <div>
-        <span class="eyebrow"><b>01</b> Our story</span>
-        <h2 class="display">The science of you.</h2>
-      </div>
-      <p class="sec-head__lede">
-        Stop guessing with your skin. We combine daily photos with label reading to show
-        what suits you — and the reason behind every suggestion.
-      </p>
-    </div>
+ <div class="wrap story-layout">
+ <div class="story-left">
+ <div class="story-left__sticky">
+ <div class="story-heading reveal">
+ <span class="eyebrow"><b>01</b> Our story</span>
+ <h2 class="display">The science of you.</h2>
+ </div>
 
-    <div class="story-cols">
-      <article class="panel reveal">
-        <span class="panel__num">A</span>
-        <h3 class="h3">Your portable clinic</h3>
-        <p>
-          One photo in daylight is enough to start. We check the light, the framing and how
-          much skin we can see before we read anything — and we ask for another photo
-          instead of guessing.
-        </p>
-      </article>
+ <article class="story-purpose reveal">
+ <h3 class="story-col__label">Your skin notes</h3>
+ <p>
+ One photo in daylight is enough to start. We check the light, the framing and how much
+ skin we can see first. If we cannot read it, we ask for another photo instead of guessing.
+ </p>
+ </article>
+ </div>
+ </div>
 
-      <article class="panel reveal">
-        <span class="panel__num">B</span>
-        <h3 class="h3">Scan, learn, refine</h3>
-        <p>
-          Your readings settle into a profile you can correct. If we got your skin wrong,
-          you tell us, and it changes. Every recommendation carries the ingredient that
-          caused it.
-        </p>
-      </article>
-    </div>
-  </div>
+ <div class="story-right">
+ <div class="story-intro reveal">
+ <p class="story__statement">We use AI for one job: narrow the shelf, then show why.</p>
+ <p class="story__lede">The details stay with each result, so you can revisit them later.</p>
+ </div>
+
+ <div class="story-detail reveal">
+ <h3 class="story-col__label">Scan, learn, refine</h3>
+ <p>
+ Your readings settle into a profile you can correct. Corrections shape future
+ matches.
+ </p>
+ <TrustRow />
+ </div>
+ </div>
+ </div>
 </section>

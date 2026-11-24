@@ -2,39 +2,37 @@
 // Four numbers, each a repo fact with its reason in the same breath. No invented
 // social proof: there are no users to count yet, so we count what is actually true.
 const stats = [
-  {
-    value: '24h',
-    label: 'Photo retention',
-    text: 'Photos are deleted within 24 hours, unless you choose to keep them.',
-  },
-  {
-    value: '55%',
-    label: 'Confidence floor',
-    text: 'Below 55% confidence we ask for another photo instead of guessing.',
-  },
-  {
-    value: '₦0',
-    label: 'Price at launch',
-    text: 'Free at launch. No subscription, and no paywall on safety advice.',
-  },
-  {
-    value: '3',
-    label: 'Steps to a match',
-    text: 'Snap, save, match — each step shows its working.',
-  },
+ {
+ value: '24h',
+ label: 'Photo retention',
+ text: 'Photos are deleted within 24 hours, unless you choose to keep them.',
+ },
+ {
+ value: '55%',
+ label: 'Confidence floor',
+ text: 'Below 55% confidence we ask for another photo instead of guessing.',
+ },
+ {
+ value: '₦0',
+ label: 'Price at launch',
+ text: 'Free at launch. No subscription, and no paywall on safety advice.',
+ },
+ {
+ value: '3',
+ label: 'Steps to a match',
+ text: 'Snap, save, match — each step shows its working.',
+ },
 ];
 ---
 
-<section class="trust" aria-label="How FreshSkin behaves">
-  <div class="wrap trust__grid">
-    {
-      stats.map((s) => (
-        <div class="trust__cell reveal">
-          <span class="numeral">{s.value}</span>
-          <b>{s.label}</b>
-          <p>{s.text}</p>
-        </div>
-      ))
-    }
-  </div>
-</section>
+<div class="story__stats" role="group" aria-label="How FreshSkin behaves">
+ {
+ stats.map((s) => (
+ <div class="stat reveal">
+ <span class="stat__value">{s.value}</span>
+ <b class="stat__label">{s.label}</b>
+ <p>{s.text}</p>
+ </div>
+ ))
+ }
+</div>
