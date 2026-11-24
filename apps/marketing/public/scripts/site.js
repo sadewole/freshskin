@@ -297,4 +297,21 @@
     window.addEventListener('resize', remeasure, { passive: true });
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
   }
+
+  // --- How It Works: interactive routine timeline pills ---------------------
+  var hiwPills = [].slice.call(document.querySelectorAll('.how-it-works__pills button[data-day]'));
+  if (hiwPills.length) {
+    hiwPills.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        hiwPills.forEach(function (b) {
+          b.classList.remove('pill--active');
+          b.classList.add('pill--inactive');
+          b.setAttribute('aria-pressed', 'false');
+        });
+        btn.classList.remove('pill--inactive');
+        btn.classList.add('pill--active');
+        btn.setAttribute('aria-pressed', 'true');
+      });
+    });
+  }
 })();
