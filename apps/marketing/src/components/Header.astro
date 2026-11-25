@@ -1,0 +1,50 @@
+---
+const app = 'https://app.freshskin.com/?utm_source=freshskin.com&utm_medium=referral&utm_campaign=masthead';
+
+const links = [
+  { href: '#story', label: 'Our story' },
+  { href: '#ai', label: 'Our AI' },
+  { href: '#labels', label: 'Product check' },
+  { href: '#scent', label: 'Scent' },
+  { href: '#coach', label: 'Coach' },
+  { href: '#faq', label: 'FAQ' },
+];
+---
+
+<header class="masthead">
+  <div class="masthead__in">
+    <a class="brand" href="/" aria-label="FreshSkin, home">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path
+            d="M12 2.5c3.6 3.2 6 6.1 6 9.3a6 6 0 1 1-12 0c0-3.2 2.4-6.1 6-9.3Z"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linejoin="round"
+          />
+          <path d="M12 8.5v8.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        </svg>
+      </span>
+      FreshSkin
+    </a>
+
+    <nav class="nav" aria-label="Sections">
+      {links.map((l) => <a href={l.href}>{l.label}</a>)}
+    </nav>
+
+    <a class="pill pill--ink masthead__cta" href={app}>
+      Open the app
+      <i aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </i>
+    </a>
+  </div>
+</header>

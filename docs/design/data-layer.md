@@ -222,7 +222,7 @@ scans.start({ viewer }: { viewer: ViewerWith<'image_processing'> }, ...)   // an
 Two roles, and the split is the guarantee:
 
 - `freshskin_app` — no `BYPASSRLS`, policies on every user-owned table using `app.current_user_id()`, and **no `SELECT` on `products`, `product_variants`, or `product_ingredients`**. Catalogue reads go through `security_invoker` views. A developer who writes `db.select().from(products)` gets `permission denied` on the first test run.
-- `freshskin_system` — `BYPASSRLS`, credentials present only in the worker process, imported only by `jobs/`. An import-graph test fails if anything else reaches it.
+- `freshskin_system` — `BYPASSRLS`, credentials present only in the worker process, imported only by worker modules (`jobs/`, `retention/`). An import-graph test fails if anything else reaches it.
 - `freshskin_support` — read-only, `SELECT` on `v_support_*` views only, which exclude images, free-text sensitivities, and email. It exists so that an incident does not create pressure to hand out system credentials.
 
 `SET LOCAL app.user_id` only, inside a transaction. A session-level `SET` through a transaction pooler would leak one user's identity into the next request; a lint rule bans bare `SET`.

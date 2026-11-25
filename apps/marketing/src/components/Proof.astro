@@ -1,0 +1,72 @@
+---
+// No users to quote yet, so no names, stars, or carousel: a sample readout plus
+// the existing sample imagery, clearly labelled.
+// The same three readings the hero annotates, with the same values, so the page
+// never shows two different sample scans.
+const readings = [
+  { label: 'Oiliness', value: 'high', conf: '0.74' },
+  { label: 'Hydration', value: 'moderate', conf: '0.81' },
+  { label: 'Texture', value: 'uneven', conf: '0.77' },
+];
+---
+
+<section class="sec proof" id="proof">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div>
+        <span class="eyebrow"><b>07</b> What a scan shows</span>
+        <h2 class="display">Proof is in<br />the progress.</h2>
+      </div>
+      <p class="sec-head__lede">
+        The same three readings, every week: what the photo shows, how sure we are of it,
+        and the reason behind the match.
+      </p>
+    </div>
+
+    <div class="proof__grid">
+      <div class="proof__readout reveal">
+        <span class="proof__k">Sample readout</span>
+        <ul class="readout">
+          {
+            readings.map((r) => (
+              <li>
+                <b>{r.label}</b>
+                <span>{r.value} · {r.conf}</span>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="note">
+          Sample imagery, not a result. Every scan carries its confidence with it.
+        </p>
+      </div>
+
+      <div class="proof__trio reveal">
+        <img
+          src="/images/tone-field.webp"
+          width="1200"
+          height="675"
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+        <img
+          src="/images/cream-jar.webp"
+          width="900"
+          height="900"
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+        <img
+          src="/images/fragrance-vial.webp"
+          width="900"
+          height="900"
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    </div>
+  </div>
+</section>

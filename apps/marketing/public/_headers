@@ -1,0 +1,9 @@
+# Response headers for hosts that support the `_headers` convention
+# (Cloudflare Pages, Netlify). The full CSP — including frame-ancestors,
+# which cannot be delivered via <meta> — is enforced here. The <meta> tag in
+# Base.astro is a fallback for static hosts without header support.
+/
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
+  Permissions-Policy: camera=(), microphone=(), geolocation=()

@@ -31,12 +31,12 @@ FreshSkin is an AI-powered personal care assistant that helps people choose body
 
 ## 4. Target Users
 
-| Persona | Description | Main need |
-| --- | --- | --- |
-| The confused buyer | Buys creams and perfumes by trial and error | Confidence before purchase |
-| The ingredient-conscious user | Reads labels but cannot interpret them | Fast, trustworthy ingredient verdicts |
-| The fragrance explorer | Wants new scents but fears blind buys | Recommendations matched to taste and skin |
-| The gift buyer | Shops for someone else | Safe, well-matched suggestions |
+| Persona                       | Description                                 | Main need                                 |
+| ----------------------------- | ------------------------------------------- | ----------------------------------------- |
+| The confused buyer            | Buys creams and perfumes by trial and error | Confidence before purchase                |
+| The ingredient-conscious user | Reads labels but cannot interpret them      | Fast, trustworthy ingredient verdicts     |
+| The fragrance explorer        | Wants new scents but fears blind buys       | Recommendations matched to taste and skin |
+| The gift buyer                | Shops for someone else                      | Safe, well-matched suggestions            |
 
 ## 5. Core Features
 
@@ -106,20 +106,20 @@ FreshSkin is an AI-powered personal care assistant that helps people choose body
 
 ## 8. Functional Requirements
 
-| ID | Requirement | Priority |
-| --- | --- | --- |
-| FR-1 | Capture and analyse a skin photo for texture and tone | P0 |
-| FR-2 | Save skin analysis results to the user profile | P0 |
-| FR-3 | Recommend body creams matched to the profile | P0 |
-| FR-4 | OCR-read an ingredient list and return a verdict | P0 |
-| FR-5 | Scent preference quiz and saved fragrance profile | P0 |
-| FR-6 | Perfume recommendations with notes, longevity and match reason | P0 |
-| FR-7 | Allergen and sensitivity flagging across creams and perfumes | P1 |
-| FR-8 | "Similar to" perfume search with price alternatives | P1 |
-| FR-9 | Cream and perfume pairing suggestions | P1 |
-| FR-10 | Ratings and feedback loop for personalisation | P1 |
-| FR-11 | Perfume bottle scanner | P2 |
-| FR-12 | Wishlist and owned-products lists | P2 |
+| ID    | Requirement                                                    | Priority |
+| ----- | -------------------------------------------------------------- | -------- |
+| FR-1  | Capture and analyse a skin photo for texture and tone          | P0       |
+| FR-2  | Save skin analysis results to the user profile                 | P0       |
+| FR-3  | Recommend body creams matched to the profile                   | P0       |
+| FR-4  | OCR-read an ingredient list and return a verdict               | P0       |
+| FR-5  | Scent preference quiz and saved fragrance profile              | P0       |
+| FR-6  | Perfume recommendations with notes, longevity and match reason | P0       |
+| FR-7  | Allergen and sensitivity flagging across creams and perfumes   | P1       |
+| FR-8  | "Similar to" perfume search with price alternatives            | P1       |
+| FR-9  | Cream and perfume pairing suggestions                          | P1       |
+| FR-10 | Ratings and feedback loop for personalisation                  | P1       |
+| FR-11 | Perfume bottle scanner                                         | P2       |
+| FR-12 | Wishlist and owned-products lists                              | P2       |
 
 ## 9. Non-Functional Requirements
 
@@ -141,15 +141,15 @@ FreshSkin is an AI-powered personal care assistant that helps people choose body
 
 ## 11. Success Metrics
 
-| Metric | Target (first 6 months, to be validated) |
-| --- | --- |
-| Activation: completed skin analysis or scent quiz | 60% of new users |
-| Weekly active users / monthly active users | 25% |
-| Recommendations saved or tapped | 40% of sessions |
-| Ingredient scans per active user per month | 3+ |
-| Perfume recommendation satisfaction (thumbs up) | 70% positive |
-| 30-day retention | 20% |
-| Share of users using both cream and perfume features | 30% |
+| Metric                                               | Target (first 6 months, to be validated) |
+| ---------------------------------------------------- | ---------------------------------------- |
+| Activation: completed skin analysis or scent quiz    | 60% of new users                         |
+| Weekly active users / monthly active users           | 25%                                      |
+| Recommendations saved or tapped                      | 40% of sessions                          |
+| Ingredient scans per active user per month           | 3+                                       |
+| Perfume recommendation satisfaction (thumbs up)      | 70% positive                             |
+| 30-day retention                                     | 20%                                      |
+| Share of users using both cream and perfume features | 30%                                      |
 
 ## 12. Release Plan
 
@@ -160,14 +160,14 @@ FreshSkin is an AI-powered personal care assistant that helps people choose body
 
 ## 13. Risks and Mitigations
 
-| Risk | Mitigation |
-| --- | --- |
-| Skin analysis inaccuracy, especially across skin tones | Diverse test data, confidence scores, retake prompts |
-| Privacy concerns around face and skin photos | Clear consent, on-device processing where possible, easy deletion |
-| Perfume taste is subjective | Preference quiz, feedback loop, "similar to" anchoring |
-| Incomplete or inaccurate product data | Trusted data sources, user corrections, regular audits |
-| Users treat results as medical advice | Clear disclaimers and referral language |
-| Low retention after first use | Reminders for rescans, new-arrival alerts, profile-based discovery |
+| Risk                                                   | Mitigation                                                         |
+| ------------------------------------------------------ | ------------------------------------------------------------------ |
+| Skin analysis inaccuracy, especially across skin tones | Diverse test data, confidence scores, retake prompts               |
+| Privacy concerns around face and skin photos           | Clear consent, on-device processing where possible, easy deletion  |
+| Perfume taste is subjective                            | Preference quiz, feedback loop, "similar to" anchoring             |
+| Incomplete or inaccurate product data                  | Trusted data sources, user corrections, regular audits             |
+| Users treat results as medical advice                  | Clear disclaimers and referral language                            |
+| Low retention after first use                          | Reminders for rescans, new-arrival alerts, profile-based discovery |
 
 ## 14. Open Questions
 
@@ -177,3 +177,75 @@ FreshSkin is an AI-powered personal care assistant that helps people choose body
 4. Build or license the product and ingredient database?
 5. Is on-device image processing feasible for the current architecture?
 6. Are there brand partnerships to pursue at launch?
+
+## 15. Technical Architecture (Web and PWA)
+
+### 15.1 Domain Structure
+
+| Property                   | Domain              | Purpose                                                                                           |
+| -------------------------- | ------------------- | ------------------------------------------------------------------------------------------------- |
+| Marketing and content site | `freshskin.com`     | Landing page, ingredient and perfume content pages, blog, legal. Static, CDN-cached, SEO-focused. |
+| Web app (PWA)              | `app.freshskin.com` | Authenticated product: skin analysis, scanner, recommendations, profile.                          |
+| API                        | `api.freshskin.com` | Backend services, image processing, AI endpoints.                                                 |
+
+**Decision:** the web app lives on a subdomain, separate from the marketing site.
+
+**Rationale**
+
+- **Clean PWA scope.** The service worker, manifest scope and cache belong only to the app origin, so a caching bug can't break marketing pages or SEO.
+- **Independent deploys.** The marketing site and the app ship on separate pipelines with their own performance budgets.
+- **Tighter security.** Cookies are host-only on `app.`, and skin photos stay on an origin with a stricter CSP.
+- **No routing conflicts.** It avoids proxy rules that send `/app/*` to the SPA while other paths stay static.
+
+**Alternative considered:** one domain with the app under `/app`. It suits a single SSR codebase, but it needs `Service-Worker-Allowed` scoping and CDN routing rules, and it couples marketing and app releases. If the landing page needs to know whether a visitor is signed in, use a shared cookie on `.freshskin.com`.
+
+### 15.2 Marketing Site
+
+- Static generation (Astro or Next.js SSG) on a CDN.
+- The main call to action goes straight to `app.freshskin.com`, with UTM parameters passed along.
+- Public ingredient and perfume-note pages (for example `/ingredients/shea-butter`), each with a call to action into the app, serve as the SEO acquisition channel.
+
+### 15.3 PWA Requirements
+
+| ID   | Requirement                                                                                                                   | Priority |
+| ---- | ----------------------------------------------------------------------------------------------------------------------------- | -------- |
+| TA-1 | Manifest with `start_url`, `scope`, maskable icons, `display: standalone`, theme colours                                      | P0       |
+| TA-2 | Workbox service worker (for example `vite-plugin-pwa`) with a precached app shell and runtime caching                         | P0       |
+| TA-3 | Offline shell showing saved profile, history and wishlist; scan and analysis show a clear offline message                     | P1       |
+| TA-4 | Custom install prompt: `beforeinstallprompt` on Android and desktop Chrome, a guided "Share → Add to Home Screen" flow on iOS | P0       |
+| TA-5 | Camera via `getUserMedia`, with a file-upload fallback and a clear permission explanation                                     | P0       |
+| TA-6 | Safe update flow: detect a new service worker and prompt a refresh                                                            | P1       |
+| TA-7 | Client-side image resize and compression, with retry for failed uploads                                                       | P1       |
+| TA-8 | HTTPS, HSTS and a strict CSP on the app origin                                                                                | P0       |
+| TA-9 | Web push for rescan reminders, opt-in (installed PWAs only on iOS)                                                            | P2       |
+
+### 15.4 Authentication and Sessions
+
+- Passwordless sign-in (email OTP or magic link) plus Google sign-in.
+- Cookies are host-only on `app.freshskin.com`: `HttpOnly`, `Secure`, `SameSite=Lax`.
+- **iOS caveat:** an installed iOS PWA has storage separate from Safari, so a user who signs up in the browser and then installs must sign in again. To reduce the friction, prompt installation early in sign-up, use OTP so re-login is quick, and keep no critical state only in browser storage.
+- Capture UTM parameters on the landing site, pass them to the app on the first redirect, and store them server-side against the account.
+
+### 15.5 Platform Differences
+
+| Topic              | Android and desktop Chrome | iOS (installed PWA)                            |
+| ------------------ | -------------------------- | ---------------------------------------------- |
+| Install prompt     | Automatic                  | Manual, needs in-app instructions              |
+| Camera permission  | Remembered per origin      | Per origin; needs a user gesture               |
+| Push notifications | Supported                  | Installed PWAs only                            |
+| Storage            | Shared with the browser    | Separate from Safari; may be evicted if unused |
+| Background sync    | Supported                  | Not supported, so retry on app open            |
+
+### 15.6 Suggested Stack (for discussion)
+
+- **Marketing site:** Astro or Next.js static export on a CDN.
+- **Web app:** React and TypeScript, Vite, Workbox, TanStack Query, IndexedDB for offline data.
+- **API:** Node.js with NestJS, separate image-processing and AI services, object storage with signed URLs and a retention policy for photos.
+- **Observability:** error tracking, Core Web Vitals monitoring, and funnel analytics from landing page to completed skin analysis.
+
+### 15.7 Open Technical Questions
+
+1. Will a native wrapper (Capacitor or React Native) be needed later for app store presence and better iOS push and storage behaviour?
+2. Which analysis steps run on-device and which run server-side?
+3. Which CDN and hosting provider best serve the target markets?
+4. What retention period applies to stored skin photos?

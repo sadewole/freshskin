@@ -76,30 +76,57 @@ pnpm test
 
 `pnpm db:reset` does the first three steps in one go.
 
+## Run the app
+
+The API serves `/api/v1`; the web client builds into `dist/apps/web` (per-origin deploys,
+see `docs/design/ui-workflow.md` §7). Build the client, then start the server:
+
+```bash
+pnpm build          # compiled server in dist/, client in dist/apps/web
+pnpm start          # http://127.0.0.1:3000
+```
+
+For development, run the two watch processes in separate terminals:
+
+```bash
+pnpm dev:server     # tsc --watch + node --watch on dist/apps/api/app/server.js
+pnpm web:dev        # Vite on :5173, proxying /api to :3000
+```
+
+`pnpm build:server` builds only the server, and `pnpm web:build` builds only the client.
+`dist/` is generated; do not edit it by hand. Until the origin split lands, the dev server
+still serves the built client for local development.
+
 ## Layout
 
 ```
-db/migrations/      hand-written SQL is the source of truth (roles, tables, RLS, views, grants)
-src/db/             schema mirror, pools, withUser (transaction-scoped identity)
-src/catalogue/      readiness gate, gated-view reads, projection to domain types
-src/safety/         the single home of allergen and sensitivity detection
-src/rec/            types, term and rule registries, diversity, explanations, pipeline,
+apps/api/           Node HTTP server + domain logic (per PRD §15: deploys to api.freshskin.com)
+  app/              HTTP server: routing, cookies, rate limiting, static hosting
+  src/db/           schema mirror, pools, withUser (transaction-scoped identity)
+  src/catalogue/    readiness gate, gated-view reads, projection to domain types
+  src/safety/       the single home of allergen and sensitivity detection
+  src/rec/          types, term and rule registries, diversity, explanations, pipeline,
                     affinity, and recommendation/feedback persistence
-src/scans/          parse gating, verdict table, lifecycle, persistence, label tokenisation
-src/skin/           analysis contract, confidence bands, bias guard, persistence
-src/auth/           anonymous sessions (token hashing, expiry, revocation)
-src/consent/        append-only consent ledger and gating
-src/saved/          wishlist and owned lists, and the owned-note feed
-src/rec/similar.ts  note-based similarity for "more like this"
-src/rec/pairing.ts  cream and perfume layering scores
-src/retention/      24-hour image purge across analyses and scans
-src/service/        composition roots for creams and perfumes, shared viewer loading
-src/http/           the only modules that know the wire shapes (recommendation and scan)
-tests/              privilege, safety, pipeline, wire, type-level, end-to-end
-scripts/            migrate and seed
+  src/rec/similar.ts  note-based similarity for "more like this"
+  src/rec/pairing.ts  cream and perfume layering scores
+  src/scans/        parse gating, verdict table, lifecycle, persistence, label tokenisation
+  src/skin/         analysis contract, confidence bands, bias guard, persistence
+  src/auth/         anonymous sessions (token hashing, expiry, revocation)
+  src/consent/      append-only consent ledger and gating
+  src/saved/        wishlist and owned lists, and the owned-note feed
+  src/retention/    24-hour image purge across analyses and scans
+  src/service/      composition roots for creams and perfumes, shared viewer loading
+  src/http/         presenters that map domain types onto @freshskin/contracts
+  db/migrations/    hand-written SQL is the source of truth (roles, tables, RLS, views, grants)
+  scripts/          migrate and seed
+  tests/            privilege, safety, pipeline, wire, type-level, boundary, end-to-end
+apps/web/           React + Vite PWA source (deploys to app.freshskin.com)
+apps/marketing/     static marketing site scaffold, Phase 3 (deploys to freshskin.com)
+packages/contracts/ type-only wire contracts shared by the server and the client
+packages/ui/        shared design tokens + primitives (tokens.css)
 ```
 
-`src/rec/pipeline.ts` is the only file that knows the stage order. `src/http/present.ts` is the only file that knows a snake_case field name.
+`apps/api/src/rec/pipeline.ts` is the only file that knows the stage order. `packages/contracts` is the only place wire field names are declared.
 
 ## The two thresholds
 
@@ -115,9 +142,6 @@ Sharing one constant is the bug this separation prevents.
 - The OCR call itself and image preprocessing; `completeScanFromText` starts from recognised
   text, and the vendor port is not implemented
 - Scan submission idempotency (`Idempotency-Key` replay)
-- The scent quiz UI and the rest of the interface
-- The interface: every surface exists as a service and a wire shape, none as a screen
-- The HTTP framework and routes (the service functions are the seam)
 - The image pipeline and the vision provider; `completeAnalysis` starts from a model response
 - Email OTP accounts on top of anonymous sessions
 - Export and erasure jobs

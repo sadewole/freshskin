@@ -1,0 +1,1415 @@
+/* FreshSkin shell styles.
+ *
+ * Plain CSS with custom properties. One file, no framework: the bundle is already the largest
+ * thing on a 3G connection, and the design here is a small set of repeated patterns (panel,
+ * card, row, chip). If this grows past a few hundred lines, split it per-component and let
+ * Vite bundle the result — do not reach for a CSS-in-JS runtime.
+ *
+ * Theme values live in `@freshskin/ui/tokens.css` (brand source: Landing mockup). This file holds
+ * only structure and layout.
+ */
+
+@import '@freshskin/ui/tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  /* Native-app tap feel: no grey flash, no double-tap zoom delay, no text
+   * selection when a thumb lands slightly off a control. */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  overscroll-behavior-y: none;
+}
+button,
+.tab,
+.chip {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.skip {
+  position: absolute;
+  left: -999px;
+}
+.skip:focus {
+  left: 1rem;
+  top: 1rem;
+  z-index: 10;
+  padding: 0.5rem 1rem;
+  background: var(--surface);
+}
+
+.topbar {
+  padding: var(--gap) 1.25rem 0.5rem;
+}
+.topbar h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+/* Display serif for page/section headings (mockup: Fraunces). Body copy stays DM Sans. */
+main h2,
+.panel h2,
+.card h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+/* ---------------------------------------------------------------- hero */
+
+.hero {
+  margin: 0.25rem 0 var(--gap);
+}
+.hero h2 {
+  margin: 0;
+  font-size: clamp(1.75rem, 6vw, 2.5rem);
+  line-height: 1.08;
+  max-width: 20ch;
+}
+.hero .kicker {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.hero p {
+  margin: 0.5rem 0 0;
+}
+
+/* ---------------------------------------------------------------- misc cards */
+
+.excluded {
+  border-style: dashed;
+}
+.tagline {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 0 1.25rem 2rem;
+}
+
+footer {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 2rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: 0.875rem;
+}
+.error {
+  color: var(--avoid);
+}
+
+/* ---------------------------------------------------------------- feedback */
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 0;
+}
+.spinner {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  border-top-color: var(--accent);
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.skeleton {
+  pointer-events: none;
+}
+.sk-line {
+  height: 0.8rem;
+  border-radius: 999px;
+  margin: 0.5rem 0;
+  background: linear-gradient(90deg, var(--line) 25%, color-mix(in srgb, var(--line) 55%, var(--surface)) 50%, var(--line) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s var(--ease-out) infinite;
+}
+.sk-title {
+  height: 1.1rem;
+  width: 55%;
+}
+.sk-short {
+  width: 35%;
+}
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.empty {
+  text-align: center;
+  padding: calc(var(--gap) * 1.5) var(--gap);
+}
+.empty-mark {
+  margin: 0 0 0.25rem;
+  color: var(--accent);
+  display: flex;
+  justify-content: center;
+}
+.with-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.tab-icon {
+  flex: none;
+}
+summary .lucide {
+  vertical-align: -2px;
+}
+.empty h3 {
+  margin: 0 0 0.25rem;
+  font-family: var(--font-display);
+  font-weight: 400;
+}
+.empty p {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner,
+  .sk-line {
+    animation: none;
+  }
+  .spinner {
+    border-top-color: var(--line);
+  }
+  .sk-line {
+    background: var(--line);
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- navigation */
+
+.tabs {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  gap: 0.25rem;
+  margin: 0.5rem 0 var(--gap);
+  padding: 0.25rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  /* Thumb-native hit area: 44px minimum on every target, bar included. */
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.6rem 0.4rem;
+  text-align: center;
+  text-decoration: none;
+  color: var(--muted);
+  border-radius: calc(var(--radius) - 4px);
+  font-size: 0.9rem;
+  position: relative;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+.tab:active {
+  transform: scale(0.96);
+}
+.tab-icon {
+  flex: none;
+  line-height: 1;
+}
+.tab-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.tab[aria-current='page'] {
+  color: var(--accent);
+}
+/* Active-tab marker: a pill dot behind the label, not color alone — the bar keeps
+ * its surface so the icons stay scannable at a glance. */
+.tab[aria-current='page']::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  width: 1.25rem;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* PWA pattern: bottom tab bar on small screens, sticky top bar on desktop. */
+@media (max-width: 40rem) {
+  .tabs {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 20;
+    margin: 0;
+    padding: 0.4rem 0.6rem calc(0.4rem + env(safe-area-inset-bottom));
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .tab {
+    /* Thumb row: roomy tap rows with the marker tucked under the label. */
+    min-height: 52px;
+    padding: 0.45rem 0.4rem 0.55rem;
+    border-radius: 12px;
+  }
+  .tab[aria-current='page'] {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+  .tab[aria-current='page']::after {
+    bottom: 4px;
+  }
+  main {
+    /* Clearance for the fixed bar plus the sticky scan CTA, whichever is present. */
+    padding-bottom: 7rem;
+  }
+}
+
+/* ---------------------------------------------------------------- layout */
+
+.panel,
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  padding: var(--gap);
+  margin-bottom: var(--gap);
+  box-shadow: var(--shadow-card);
+}
+
+/* Card entrance is Motion-driven (see ui/motion.ts viewEnter): fade + rise, one meaning
+ * (content arrived), with reduced-motion handled by MotionConfig. Only infinite loops
+ * (spinner, shimmer) stay in CSS. */
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: var(--gap);
+}
+/* Phone sections stack: the kind toggle goes full-width above the price filter,
+ * so neither cramps at 360px and both stay thumb-reachable. */
+@media (max-width: 40rem) {
+  .row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .segmented {
+    display: flex;
+  }
+  .segmented .seg {
+    flex: 1;
+  }
+  .filter {
+    justify-content: space-between;
+  }
+}
+
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.card-head h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.score {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* ---------------------------------------------------------------- product card */
+
+.product-main {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+.product-thumb {
+  flex: none;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: var(--accent);
+  background: linear-gradient(135deg, var(--blush), var(--rose));
+}
+.product-head {
+  flex: 1;
+  min-width: 0;
+}
+.product-meta {
+  margin: 0.15rem 0 0;
+}
+.product-reason {
+  margin: 0.6rem 0 0;
+  line-height: 1.55;
+}
+.score-pill {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 0.85rem;
+  min-width: 2.5rem;
+  text-align: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.score-pill.high {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: transparent;
+}
+.score-pill.mid {
+  background: color-mix(in srgb, var(--okay) 14%, var(--surface));
+  color: var(--okay);
+  border-color: color-mix(in srgb, var(--okay) 35%, transparent);
+}
+.product-flags {
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.flag {
+  font-size: 0.78rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--okay) 12%, var(--surface));
+  color: var(--muted);
+  border: 1px solid var(--line);
+}
+.breakdown {
+  margin-top: 0.5rem;
+}
+.breakdown ul {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+.breakdown li {
+  display: grid;
+  grid-template-columns: 1fr 5rem 2rem;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+.breakdown-label {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.breakdown-bar {
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.breakdown-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+}
+.breakdown-value {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--muted);
+}
+.product-actions {
+  margin: 0.75rem 0 0;
+}
+
+/* ---------------------------------------------------------------- controls */
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  padding: 0.55rem 1rem;
+  background: var(--surface);
+  color: var(--ink);
+  /* Every button is a thumb target first: 44px minimum even for `.small`. */
+  min-height: 44px;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+button.primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: transparent;
+  font-weight: 600;
+}
+button.ghost {
+  background: transparent;
+}
+button.small {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.2rem;
+}
+.seg {
+  border: 0;
+  background: transparent;
+  padding: 0.4rem 0.9rem;
+  /* Segmented options participate in the same 44px thumb rule. */
+  min-height: 44px;
+}
+.seg[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.chip {
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
+  /* Chips are multi-select thumbs: keep them tappable without fat-fingering. */
+  min-height: 44px;
+  background: transparent;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+.chip:active {
+  transform: scale(0.95);
+}
+.chip[aria-pressed='true'],
+.chip.on {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: transparent;
+}
+.chip.like.on {
+  background: var(--green);
+  color: var(--cream-2);
+}
+.chip.avoid.on {
+  background: var(--avoid);
+  color: var(--cream-2);
+}
+
+/* ---------------------------------------------------------------- quiz */
+
+.quiz h2 {
+  margin: 0.5rem 0 0.25rem;
+  font-size: 1.5rem;
+}
+.quiz > .muted {
+  margin: 0 0 var(--gap);
+}
+.quiz-steps {
+  list-style: none;
+  display: flex;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+}
+.quiz-steps li {
+  flex: 1;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: var(--line);
+  transition: background-color var(--dur-med) var(--ease-out);
+}
+.quiz-steps li.done,
+.quiz-steps li.now {
+  background: var(--accent);
+}
+.quiz-nav {
+  margin-bottom: 0;
+  justify-content: space-between;
+}
+.chip-static {
+  display: inline-block;
+  margin-right: 0.3rem;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+}
+
+.check {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  margin: 0.4rem 0;
+}
+
+.filter {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.5rem 0.65rem;
+  /* iOS zooms the whole page when a sub-16px field focuses — the single biggest
+   * "this is a website, not an app" tell. Fields stay at body size minimum. */
+  font-size: 1rem;
+  /* Thumb-reachable fields: comfortable tap height without looking chunky. */
+  min-height: 44px;
+}
+textarea {
+  width: 100%;
+  resize: vertical;
+  margin-bottom: var(--gap);
+}
+.filter input {
+  width: 7.5rem;
+}
+
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--gap);
+}
+legend {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+
+details summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.875rem;
+  /* The breakdown disclosure is a thumb target too. */
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+dl {
+  margin: 0;
+}
+dd {
+  margin: 0 0 0.5rem;
+}
+
+/* ---------------------------------------------------------------- scan */
+
+.scan-mode {
+  margin-bottom: var(--gap);
+}
+/* Segmented buttons carry icons next to labels. */
+.seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.scan-input textarea {
+  margin-bottom: 0.75rem;
+}
+.scan-input .primary {
+  width: 100%;
+}
+/* Thumb-reach: on phones the scan CTA sticks above the tab bar so a paste-and-go
+ * never requires scrolling past the keyboard. Desktop keeps it in flow. */
+@media (max-width: 40rem) {
+  .scan-input .primary {
+    position: sticky;
+    bottom: calc(4.5rem + env(safe-area-inset-bottom));
+    z-index: 10;
+    box-shadow: var(--shadow-pop);
+  }
+}
+
+/* ---------------------------------------------------------------- verdicts */
+
+.verdict {
+  border-top: 4px solid var(--line);
+}
+.verdict.good {
+  border-top-color: var(--good);
+}
+.verdict.okay {
+  border-top-color: var(--okay);
+}
+.verdict.avoid {
+  border-top-color: var(--avoid);
+}
+.verdict-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.verdict-mark {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  background: var(--line);
+  color: var(--muted);
+}
+.verdict.good .verdict-mark {
+  background: var(--good);
+  color: var(--cream-2);
+}
+.verdict.okay .verdict-mark {
+  background: var(--okay);
+  color: var(--cream-2);
+}
+.verdict.avoid .verdict-mark {
+  background: var(--avoid);
+  color: var(--cream-2);
+}
+.verdict-head h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+.verdict-summary {
+  margin: 0.6rem 0 0;
+  line-height: 1.55;
+}
+.match-meter {
+  margin-top: 0.75rem;
+}
+.match-bar {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.match-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transition: width var(--dur-med) var(--ease-out);
+}
+.match-meter p {
+  margin: 0.3rem 0 0;
+}
+.findings {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.finding {
+  margin: 0;
+  font-size: 0.9rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--line) 35%, var(--surface));
+  border-left: 3px solid var(--line);
+  display: grid;
+  gap: 0.15rem;
+}
+.finding.severe,
+.finding.high {
+  border-left-color: var(--avoid);
+}
+.finding.moderate,
+.finding.medium {
+  border-left-color: var(--okay);
+}
+.finding.low,
+.finding.mild {
+  border-left-color: var(--good);
+}
+.retake {
+  margin: 0.75rem 0 0;
+}
+
+/* ---------------------------------------------------------------- capture */
+
+/* Live preview fills the card; the guide overlay marks where the label should sit. */
+.capture-frame {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--ink);
+  aspect-ratio: 4 / 3;
+}
+.capture-frame video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.capture-guide {
+  position: absolute;
+  inset: 12%;
+  border: 2px dashed var(--cream-2);
+  border-radius: var(--radius);
+  opacity: 0.8;
+  pointer-events: none;
+}
+.capture-preview img {
+  display: block;
+  width: 100%;
+  border-radius: var(--radius);
+}
+.capture-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+/* ---------------------------------------------------------------- home sections */
+
+/* Compact greeting above the hub: no card, no gradient — the overview carries the color. */
+.home-greet {
+  margin: 0.25rem 0 var(--gap);
+}
+.home-greet .kicker {
+  margin: 0 0 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.home-greet h2 {
+  margin: 0;
+  font-size: clamp(1.6rem, 6vw, 2.25rem);
+  line-height: 1.1;
+}
+.home-greet .muted {
+  margin: 0.35rem 0 0;
+  max-width: 42ch;
+}
+.home-hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 0 0 var(--gap);
+}
+.quick-card {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 0.65rem 0.7rem;
+  min-height: 64px;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+.quick-card:active {
+  transform: scale(0.98);
+}
+.quick-card[aria-pressed='true'] {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+.quick-icon {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+.quick-text {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+.quick-text strong {
+  font-size: 0.92rem;
+  line-height: 1.25;
+}
+@media (max-width: 22rem) {
+  .quick-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin: calc(var(--gap) * 1.25) 0 0.75rem;
+}
+.section-head h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 5vw, 1.75rem);
+  line-height: 1.15;
+  max-width: 22ch;
+}
+.section-head .kicker {
+  margin: 0 0 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.section-head .segmented {
+  flex: none;
+}
+
+/* ---------------------------------------------------------------- routine + tips (S7) */
+
+.home-section {
+  margin: calc(var(--gap) * 1.25) 0 var(--gap);
+}
+.routine-steps {
+  list-style: none;
+  margin: 0 0 var(--gap);
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+.routine-step-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.routine-step-head h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.routine-step p {
+  margin: 0.5rem 0 0;
+  line-height: 1.55;
+}
+.routine-num {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--accent-ink);
+  background: var(--accent);
+}
+.step-why {
+  margin-top: 0.35rem;
+}
+.why-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+.why-list strong {
+  color: var(--ink);
+}
+.checkin-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--accent);
+}
+.checkin-head h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--ink);
+}
+.checkin .chips {
+  margin: 0.5rem 0;
+}
+.checkin .primary {
+  margin-top: 0.25rem;
+}
+.checkin-history {
+  margin: 0.75rem 0 0;
+}
+.sync-note {
+  margin: 0.5rem 0 0;
+  font-style: italic;
+}
+@media (min-width: 40rem) {
+  .routine-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.filter-row {
+  margin-bottom: 0.75rem;
+}
+
+.capture-actions .primary {
+  flex: 1;
+  min-width: 10rem;
+}
+.scan-capture .error {
+  margin-bottom: 0;
+}
+
+/* ---------------------------------------------------------------- home hub (restructure) */
+
+.icon-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-height: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+}
+
+/* Week overview strip: the routine's progress at a glance, opens the routine sheet. */
+.overview {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  text-align: left;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 12%, var(--surface)),
+    var(--surface) 60%
+  );
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 0.85rem 1rem;
+  margin: 0 0 var(--gap);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.overview:active {
+  transform: scale(0.98);
+}
+.overview-icon {
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+.overview-text {
+  display: grid;
+  gap: 0.2rem;
+  flex: 1;
+  min-width: 0;
+  color: var(--ink);
+}
+.overview-text .muted {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.progress-line {
+  display: block;
+  height: 4px;
+  border-radius: 999px;
+  margin-top: 0.35rem;
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+  overflow: hidden;
+}
+.progress-line > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width var(--dur-med) var(--ease-out);
+}
+.streak-pill {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  border-radius: 999px;
+  padding: 0.25rem 0.6rem;
+}
+
+/* Tip slip: one rotating tip styled as a pinned note, not page content — slight
+tilt, a pin dot at top-center, a torn-ticket dashed divider under the header,
+and an oversize quote watermark. */
+.tip-ribbon {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  rotate: -0.6deg;
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--line));
+}
+.tip-ribbon > .tip-pin {
+  position: absolute;
+  z-index: 1;
+  top: 0.45rem;
+  left: 50%;
+  translate: -50% 0;
+  margin: 0;
+  font-size: 1.1rem;
+  line-height: 1;
+  pointer-events: none;
+}
+.tip-ribbon::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  width: 7.5rem;
+  height: 7.5rem;
+  right: 1.5rem;
+  bottom: -3.5rem;
+  border-radius: 50%;
+  border: 1.5rem solid color-mix(in srgb, var(--accent) 16%, transparent);
+  pointer-events: none;
+}
+.tip-ribbon::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  width: 11rem;
+  height: 11rem;
+  right: -3.5rem;
+  bottom: -4.5rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  pointer-events: none;
+}
+.tip-ribbon > * {
+  position: relative;
+  z-index: 1;
+}
+.tip-ribbon-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 2px dashed color-mix(in srgb, var(--accent) 30%, var(--line));
+}
+.tip-ribbon .tip-mark {
+  margin: 0;
+}
+.tip-daypart {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.tip-topic {
+  font-size: 0.72rem;
+  text-transform: capitalize;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+}
+.tip-ribbon-top .icon-btn {
+  margin-left: auto;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+.tip-ribbon .tip-body {
+  margin: 0.6rem 0 0;
+  line-height: 1.55;
+}
+.tip-ribbon details {
+  margin-top: 0.5rem;
+}
+
+/* Curated grid: 2-col compact tiles, Tap opens the product sheet. */
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+.tile {
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 0.7rem;
+  color: var(--ink);
+}
+.tile-name {
+  font-weight: 700;
+  font-size: 0.92rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.tile-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 4.5rem;
+  border-radius: calc(var(--radius) - 4px);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+  overflow: hidden;
+}
+.tile-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.tile-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.tile-flag {
+  font-size: 0.72rem;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  justify-self: start;
+}
+.show-more {
+  margin: 0.75rem auto 0;
+  display: flex;
+}
+
+/* Quiz banner: the inline nudge slimmed to one row above the grid. */
+.quiz-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 0.75rem;
+  padding: 0.65rem 0.8rem;
+  color: var(--ink);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 10%, var(--surface)),
+    var(--surface) 60%
+  );
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+.quiz-banner svg {
+  flex: none;
+  color: var(--accent);
+}
+
+/* Routine preview: first steps inline, the rest opens the sheet. */
+.routine-preview {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 0.85rem 1rem;
+}
+.routine-mini {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.routine-mini li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.routine-mini .routine-num {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.78rem;
+}
+.routine-preview-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.65rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* Bottom sheet: backdrop + slide-up panel with grab handle, T~finger zone. */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgb(0 0 0 / 0.45);
+}
+.sheet {
+  position: fixed;
+  z-index: 41;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  bottom: 0;
+  width: min(44rem, 100%);
+  max-height: 88dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--bg);
+  border-radius: 24px 24px 0 0;
+  box-shadow: var(--shadow-pop);
+  padding: 0 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
+  outline: none;
+}
+.sheet:focus {
+  outline: none;
+}
+.sheet-grab-zone {
+  position: sticky;
+  top: 0;
+  padding: 0.65rem 0 0.35rem;
+  background: var(--bg);
+  touch-action: pan-x pan-y;
+  cursor: grab;
+  z-index: 1;
+}
+.sheet-grabber {
+  display: block;
+  width: 2.5rem;
+  height: 4px;
+  margin: 0 auto;
+  border-radius: 999px;
+  background: var(--line);
+}
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+.sheet-title {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.25;
+}
+.sheet .card:last-child {
+  margin-bottom: 0;
+}

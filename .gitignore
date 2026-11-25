@@ -2,3 +2,5 @@ node_modules/
 dist/
 .pnpm-store/
 *.log
+
+# Per-origin build output (dist/apps/*).

@@ -1,0 +1,148 @@
+---
+const app = 'https://app.freshskin.com/?utm_source=freshskin.com&utm_medium=referral&utm_campaign=hero';
+
+// The headline is split into per-letter spans so the bubble can emphasise the
+// letters it passes over. Words stay inline-block, so the line breaks are the
+// same as before and the accessible name comes from the h1's aria-label.
+const words = [
+ ...'Skincare and scent that'.split(' ').map((text) => ({ text, accent: false })),
+ ...'actually fit you.'.split(' ').map((text) => ({ text, accent: true })),
+];
+
+// The lede is split the same way, so the bubbles can emphasise its letters too.
+// The unbroken copy stays in the markup for screen readers.
+const ledeText =
+ 'Our AI reads one photo of your skin in daylight, then tells you what it sees, how sure it is, and why each match fits.';
+const ledeWords = ledeText.split(' ');
+
+// Sample readings, the same three the Proof section shows, drawn onto the
+// portrait the way the reference does it. The three names are the standard
+// metrics a skin analysis reports, and each point sits where that metric is
+// actually read: oil on the T-zone, hydration on the cheek, texture on the jaw.
+// x/y are the chip anchor, dx/dy the point on the face; all four are
+// percentages of the frame, so the lines hold their shape at any size.
+const pointers = [
+  { key: 'a', label: 'Oiliness', value: 'high · 0.74', x: 36, y: 26, dx: 73, dy: 21 },
+  { key: 'b', label: 'Hydration', value: 'moderate · 0.81', x: 46, y: 52, dx: 82, dy: 40 },
+  { key: 'c', label: 'Texture', value: 'uneven · 0.77', x: 34, y: 84, dx: 67, dy: 65 },
+];
+---
+
+<section class="hero ruled">
+  <div class="wrap hero__head reveal">
+    <span class="eyebrow eyebrow--center">AI skin analysis</span>
+    <div class="hero__copy" data-bubble-scene>
+      <h1 class="display hero__title" aria-label="Skincare and scent that actually fit you.">
+        {
+          words.map((word, i) => (
+            <Fragment>
+              {i > 0 && ' '}
+              <span
+                class:list={['hero__word', word.accent && 'hero__word--accent']}
+                aria-hidden="true"
+              >
+                {[...word.text].map((ch) => <span class="hero__char" data-char>{ch}</span>)}
+              </span>
+            </Fragment>
+          ))
+        }
+      </h1>
+    <p class="lede hero__lede">
+      <span class="hero__sr">{ledeText}</span>
+      <span aria-hidden="true">
+        {
+          ledeWords.map((word, i) => (
+            <Fragment>
+              {i > 0 && ' '}
+              <span class="hero__word">
+                {[...word].map((ch) => <span class="hero__char hero__char--lede" data-char>{ch}</span>)}
+              </span>
+            </Fragment>
+          ))
+        }
+      </span>
+    </p>
+    <span class="hero__bubble hero__bubble--main" aria-hidden="true" data-bubble></span>
+    <span class="hero__bubble hero__bubble--small" aria-hidden="true" data-bubble></span>
+    <span class="hero__bubble hero__bubble--wide" aria-hidden="true" data-bubble></span>
+    </div>
+    <div class="hero__actions">
+      <a class="pill" href={app}>
+        Scan my skin
+        <i aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </i>
+      </a>
+      <a class="link-arrow" href="#ai">
+        See how it works
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path
+            d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="wrap hero__portrait reveal">
+    <div class="hero__frame">
+      <span class="ghost hero__mark" data-word="FreshSkin" aria-hidden="true"></span>
+      <img
+        src="/images/hero-face.webp"
+        width="1600"
+        height="915"
+        alt="A woman lying on her back in daylight, eyes closed, her face turned up toward the light."
+        loading="eager"
+        decoding="async"
+        fetchpriority="high"
+      />
+      <span class="hero__sample">Scan analysis</span>
+
+      <div class="hero__pointers">
+        <svg
+          class="hero__lines"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+          focusable="false"
+        >
+          {
+            pointers.map((p) => (
+              <g>
+                <line x1={p.x} y1={p.y} x2={p.dx} y2={p.dy} vector-effect="non-scaling-stroke" />
+                <line
+                  class="hero__dot"
+                  x1={p.dx}
+                  y1={p.dy}
+                  x2={p.dx}
+                  y2={p.dy}
+                  vector-effect="non-scaling-stroke"
+                />
+              </g>
+            ))
+          }
+        </svg>
+        {
+          pointers.map((p) => (
+            <span class={`pointer pointer--${p.key}`}>
+              <b>{p.label}</b>
+              <span>{p.value}</span>
+            </span>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>

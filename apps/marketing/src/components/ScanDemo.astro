@@ -1,0 +1,97 @@
+---
+// A three-step walkthrough using one precomputed, typical scan. No API call,
+// no live model — the numbers here are illustrative and labelled as such.
+// With JavaScript off the three steps render as a plain ordered list.
+---
+
+<div class="demo" id="demo">
+  <div class="demo__head">
+    <span class="demo__title">Your scan</span>
+    <span class="demo__count" data-count>Step 1 of 3</span>
+  </div>
+
+  <ol class="demo__steps" data-steps>
+    <li class="step" data-step="1" data-active>
+      <span class="step__label"><span class="step__num">1</span> Photograph</span>
+      <p class="h3 step__title">Take one photo in daylight.</p>
+      <p>No filter, no makeup. One photo is enough to start.</p>
+      <div class="step__photo">
+        <img
+          src="/images/tone-field.webp"
+          width="1200"
+          height="675"
+          alt="A soft neutral reference gradient standing in for a skin photograph."
+          loading="lazy"
+          decoding="async"
+        />
+        <span class="step__tag">Sample photo</span>
+      </div>
+    </li>
+
+    <li class="step" data-step="2">
+      <span class="step__label"><span class="step__num">2</span> Read</span>
+      <p class="h3 step__title">We read what the photo shows.</p>
+      <p>Each reading carries how sure we are of it.</p>
+      <ul class="readout">
+        <li><b>Dryness</b> <span>moderate · 0.81</span></li>
+        <li><b>Texture</b> <span>uneven · 0.74</span></li>
+        <li><b>Evenness</b> <span>68 / 100 · 0.77</span></li>
+      </ul>
+    </li>
+
+    <li class="step" data-step="3">
+      <span class="step__label"><span class="step__num">3</span> Match</span>
+      <p class="h3 step__title">You get a match, and the reason it fits.</p>
+      <p>Never a score without its explanation.</p>
+      <div class="match">
+        <div class="match__top">
+          <div class="match__thumb" aria-hidden="true"></div>
+          <div>
+            <div class="match__name">Fragrance-free barrier cream</div>
+            <div class="match__meta">Good match · 0.82 confidence</div>
+          </div>
+        </div>
+        <p class="match__reason">
+          <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path
+              d="m3 8.5 3 3 7-7"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          Ceramides and glycerin, no fragrance — that suits the dryness and texture
+          the scan found.
+        </p>
+      </div>
+    </li>
+  </ol>
+
+  <div class="demo__foot">
+    <div class="demo__dots" aria-hidden="true">
+      <span data-dot="1" data-on></span>
+      <span data-dot="2"></span>
+      <span data-dot="3"></span>
+    </div>
+    <button class="pill" type="button" data-next>
+      <span data-next-label>Next step</span>
+      <i aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path
+            d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </i>
+    </button>
+  </div>
+
+  <p class="demo__note">
+    A sample scan, not a diagnosis. Photos are deleted within 24 hours unless you
+    choose to keep them.
+  </p>
+</div>

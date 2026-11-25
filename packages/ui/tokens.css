@@ -1,0 +1,131 @@
+/* FreshSkin design tokens — Phase 0.
+ *
+ * Values sourced 1:1 from the Landing mockup (`docs/design/design system/Landing.dc.html`):
+ * the <helmet> block and inline styles. Components must consume these custom properties;
+ * no hardcoded hex values outside this file.
+ *
+ * Semantic aliases (--bg, --surface, --ink, ...) keep the names `styles.css` already uses,
+ * so the Phase 1 reskin touches only values, not call sites.
+ */
+
+:root {
+  /* ---- brand palette (mockup) ---- */
+  --cream: #fbf5ec;
+  --cream-2: #fffcf7;
+  --ink-brand: #2e1b14;
+  --ink-soft: #5a463c;
+  --muted-brand: #6b5448;
+  --berry: #a62b52;
+  --berry-deep: #7c1f3e;
+  --green: #35604a;
+  --line-brand: #e6d8c8;
+  --blush: #f6dcd6;
+  --rose: #f3d5be;
+
+  /* ---- type ---- */
+  --font: 'DM Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+
+  /* ---- shape & space (mockup: cards 28px, phone/pill 36px/999px) ---- */
+  --radius: 14px;
+  --radius-card: 28px;
+  --radius-pill: 999px;
+  --gap: 1rem;
+
+  /* ---- motion (B2C bar: 150–250ms ease-out, one meaning per transition) ---- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 150ms;
+  --dur-med: 250ms;
+  --shadow-card: 0 1px 2px rgb(46 27 20 / 0.06), 0 8px 24px -12px rgb(46 27 20 / 0.18);
+  --shadow-pop: 0 2px 6px rgb(46 27 20 / 0.1), 0 16px 40px -16px rgb(166 43 82 / 0.35);
+
+  /* ---- marketing additions (decision 0005) -------------------------------
+   * Additive only: no value above changes. Consumed by apps/marketing; safe for
+   * apps/web to ignore.
+   * ---------------------------------------------------------------------- */
+
+  /* Tone scale: the mockup's six "Every skin tone" swatches, promoted from inline
+   * hex. Reference colours for describing tone bands — never a verdict. */
+  --tone-1: #f3d5be;
+  --tone-2: #e2b48f;
+  --tone-3: #c48b63;
+  --tone-4: #8d5a3b;
+  --tone-5: #5c3a26;
+  --tone-6: #3a2417;
+
+  /* Remaining mockup section grounds */
+  --sand: #f3e6d6;
+  --green-tint: #e3ebdd;
+
+  /* Hairline rules and oversize ghost type. Derived from --ink (not --ink-brand)
+   * because --ink is the property the dark theme swaps, so these follow it. */
+  --rule: color-mix(in srgb, var(--ink) 8%, transparent);
+  --ghost-ink: color-mix(in srgb, var(--ink) 6%, transparent);
+
+  /* Type scale (mockup values, clamped). Sections stop re-declaring clamps. */
+  --type-display: clamp(44px, 7vw, 84px);
+  --type-h1: clamp(44px, 7vw, 84px);
+  --type-h2: clamp(34px, 5vw, 56px);
+  --type-statement: clamp(36px, 6vw, 68px);
+  --type-h3: 26px;
+  --type-body: 18px;
+  --type-kicker: 12px;
+  --type-numeral: 40px;
+  --lh-display: 1.02;
+  --lh-body: 1.6;
+  --track-kicker: 0.14em;
+
+  /* Space rhythm */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* ---- semantic aliases: light theme (mockup ground) ---- */
+  color-scheme: light dark;
+  --bg: var(--cream);
+  --surface: var(--cream-2);
+  --ink: var(--ink-brand);
+  --muted: var(--muted-brand);
+  --line: var(--line-brand);
+  --accent: var(--berry);
+  --accent-ink: var(--cream-2);
+  --good: #2e7d46;
+  --okay: #9a6b0f;
+  --avoid: #b91c1c;
+}
+
+/* Derived dark theme: the mockup is light-only, so this is a FreshSkin derivation
+ * (deep plum-brown ground, cream ink) rather than a mockup value. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #211411;
+    --surface: #2e1c19;
+    --ink: #f6e9dd;
+    /* --ink-soft is the body-copy ink. In light it is the mockup's brand value;
+       in dark it must be derived like --ink above, or every paragraph prints
+       dark brown on a near-black ground. */
+    --ink-soft: #d8c3b4;
+    --muted: #c7a794;
+    --line: #4a322c;
+    --accent: #de8ba6;
+    --accent-ink: #2a1218;
+    --good: #86d99b;
+    --okay: #e5b85c;
+    --avoid: #f08a8a;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px -12px rgb(0 0 0 / 0.5);
+    --shadow-pop: 0 2px 6px rgb(0 0 0 / 0.4), 0 16px 40px -16px rgb(222 139 166 / 0.3);
+  }
+}
+
+/* Motion off means off: every transition/animation below is gated on this. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-med: 0ms;
+  }
+}
